@@ -37,7 +37,8 @@ export class UserService {
 
       return user;
     } catch (error: any) {
-      console.log(error);
+      this._logger.error(error);
+      throw error;
     }
   }
 
@@ -82,19 +83,14 @@ export class UserService {
         firstName: createUserDTO.firstName,
         lastName: createUserDTO.lastName,
         email: createUserDTO.email,
-        auth0Id: authUser.user_id,
+        auth0Id: authUser.data.user_id,
       };
 
       user = await this._userRepository.save(userData).catch((error) => {
         throw error;
       });
     } catch (error: any) {
-      // if (user) {
-      //   this.deleteUser(user);
-      // }
-      // if (authUser) {
-      //   this._authService.removeUser(authUser._id);
-      // }
+      this._logger.error(error);
       throw error;
     }
 

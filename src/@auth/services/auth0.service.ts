@@ -2,6 +2,8 @@ import { startCase } from 'lodash';
 import { ConfigService } from '@nestjs/config';
 import { Injectable, Logger } from '@nestjs/common';
 import {
+  ApiResponse,
+  GetUsers200ResponseOneOfInner,
   ManagementClient,
   ManagementClientOptionsWithClientCredentials,
   UserCreate,
@@ -23,24 +25,9 @@ export class Auth0Service {
       domain: this._config.get('AUTH0_DOMAIN'),
       clientId: this._config.get('AUTH0_CLIENT_ID'),
       clientSecret: this._config.get('AUTH0_CLIENT_SECRET'),
-      // scope: 'read:users update:users create:users delete:users'
+      scope: 'read:users update:users create:users delete:users',
     } as ManagementClientOptionsWithClientCredentials);
   }
-
-  // public async updateUserPassword(
-  //   userAuth0Id: string,
-  // ): Promise<PasswordChangeTicketResponse> {
-  //   // return this.auth0.createPasswordChangeTicket({
-  //   //   user_id: userAuth0Id,
-  //   //   client_id: this._config.get('AUTH0_CLIENT_ID'),
-  //   // });
-
-  //   return await this.auth0.tickets.changePassword({
-  //     user_id: userAuth0Id,
-  //     result_url: 'YOUR_RESET_PASSWORD_REDIRECT_URL',
-  //     connection_id: 'YOUR_CONNECTION_ID',
-  //   });
-  // }
 
   public async createUser(
     email: string,
@@ -70,13 +57,29 @@ export class Auth0Service {
       });
     }
 
-    const user = await this.auth0.users.create(userObj).catch((e) => {
-      this._logger.error(e.message, e.stack);
-      throw new Error(e.message);
-    });
+    const user: ApiResponse<GetUsers200ResponseOneOfInner> =
+      await this.auth0.users.create(userObj).catch((e) => {
+        this._logger.error(e.message, e.stack);
+        throw new Error(e.message);
+      });
 
     return user;
   }
+
+  // public async updateUserPassword(
+  //   userAuth0Id: string,
+  // ): Promise<PasswordChangeTicketResponse> {
+  //   // return this.auth0.createPasswordChangeTicket({
+  //   //   user_id: userAuth0Id,
+  //   //   client_id: this._config.get('AUTH0_CLIENT_ID'),
+  //   // });
+
+  //   return await this.auth0.tickets.changePassword({
+  //     user_id: userAuth0Id,
+  //     result_url: 'YOUR_RESET_PASSWORD_REDIRECT_URL',
+  //     connection_id: 'YOUR_CONNECTION_ID',
+  //   });
+  // }
 
   // public async updateUser(
   //   auth0Id: string,
