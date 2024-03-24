@@ -21,7 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       }),
 
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      audience: '/core/api',
+      audience: '/messenger-two',
       issuer: `https://${process.env.AUTH0_ISS}/`,
       algorithms: ['RS256'],
     });
