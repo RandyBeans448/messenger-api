@@ -6,6 +6,7 @@ import {
   GetUsers200ResponseOneOfInner,
   ManagementClient,
   ManagementClientOptionsWithClientCredentials,
+  PostPasswordChange201Response,
   UserCreate,
 } from 'auth0';
 import * as passGenerator from 'generate-password';
@@ -66,20 +67,20 @@ export class Auth0Service {
     return user;
   }
 
-  // public async updateUserPassword(
-  //   userAuth0Id: string,
-  // ): Promise<PasswordChangeTicketResponse> {
-  //   // return this.auth0.createPasswordChangeTicket({
-  //   //   user_id: userAuth0Id,
-  //   //   client_id: this._config.get('AUTH0_CLIENT_ID'),
-  //   // });
+  public async updateUserPassword(
+    userAuth0Id: string,
+  ): Promise<ApiResponse<PostPasswordChange201Response>> {
+    // return this.auth0.createPasswordChangeTicket({
+    //   user_id: userAuth0Id,
+    //   client_id: this._config.get('AUTH0_CLIENT_ID'),
+    // });
 
-  //   return await this.auth0.tickets.changePassword({
-  //     user_id: userAuth0Id,
-  //     result_url: 'YOUR_RESET_PASSWORD_REDIRECT_URL',
-  //     connection_id: 'YOUR_CONNECTION_ID',
-  //   });
-  // }
+    return await this.auth0.tickets.changePassword({
+      user_id: userAuth0Id,
+      result_url: 'YOUR_RESET_PASSWORD_REDIRECT_URL',
+      connection_id: 'YOUR_CONNECTION_ID',
+    });
+  }
 
   // public async updateUser(
   //   auth0Id: string,
@@ -124,17 +125,15 @@ export class Auth0Service {
   //   return user;
   // }
 
-  // public async removeUser(userId: string): Promise<void> {
-  //   this._logger.log(`Removing User from Auth0 ${userId}`);
-
-  //   try {
-  //     // TODO - Jack & Herby - Check why deleteUser method does nothing
-  //     await this.auth0.deleteUser({
-  //       id: userId,
-  //     });
-  //   } catch (e) {
-  //     this._logger.error(e.message, e.stack);
-  //     throw new Error(`User with ID ${userId} was NOT removed from Auth0`);
-  //   }
-  // }
+  public async removeUser(userId: string): Promise<void> {
+    this._logger.log(`Removing User from Auth0 ${userId}`);
+    try {
+      await this.auth0.users.delete({
+        id: userId,
+      });
+    } catch (e) {
+      this._logger.error(e.message, e.stack);
+      throw new Error(`User with ID ${userId} was NOT removed from Auth0`);
+    }
+  }
 }

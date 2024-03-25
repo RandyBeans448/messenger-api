@@ -6,10 +6,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { DeleteResult, Repository, SelectQueryBuilder } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { Auth0Service } from 'src/@auth/services/auth0.service';
 import { CreateUserDTO } from '../dto/create-user.dto';
+import { UpdateUserDTO } from '../dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -102,21 +103,52 @@ export class UserService {
     };
   }
 
-  // public async deleteUser(
-  //   user: User,
-  //   hardDelete: boolean = false,
-  // ): Promise<DeleteResult> {
-  //   try {
-  //     const success: DeleteResult = await this._userRepository.softDelete(
-  //       user.id,
-  //     );
-  //     if (user.auth0Id && hardDelete) {
-  //       this._authService.removeUser(user.auth0Id);
-  //     }
+  public getAllUsers(): Promise<User[]> {
+    return this._userRepository.find();
+  }
 
-  //     return success;
-  //   } catch (error: any) {
-  //     this._logger.error(error);
-  //   }
-  // }
+  public async getUserById(id: string): Promise<User> {
+    return await this._userRepository.findOne({
+      where: { id },
+    });
+  }
+
+  public async updateUser(updateUserDto: UpdateUserDTO): Promise<User> {
+    try {
+      const user: User = await this.getUserById(updateUserDto.userId);
+
+      if (updateUserDto.email) user.email = updateUserDto.email;
+      if (updateUserDto.firstName) user.firstName = updateUserDto.firstName;
+      if (updateUserDto.lastName) user.lastName = updateUserDto.lastName;
+
+      if (updateUserDto.password) {
+        await this._authService.updateUserPassword(updateUserDto.password);
+      }
+
+      return await this._userRepository.save(user);
+    } catch (error: any) {
+      this._logger.error(error);
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  public async deleteUser(
+    user: User,
+    hardDelete: boolean = false,
+  ): Promise<DeleteResult> {
+    try {
+      const success: DeleteResult = await this._userRepository.softDelete(
+        user.id,
+      );
+
+      if (user.auth0Id && hardDelete) {
+        await this._authService.removeUser(user.auth0Id);
+        await this._userRepository.delete(user.id);
+      }
+
+      return success;
+    } catch (error: any) {
+      this._logger.error(error);
+    }
+  }
 }
