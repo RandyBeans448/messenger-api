@@ -78,7 +78,7 @@ export class UserController {
     } catch (error: any) {
       this._logger.error(error);
       throw new HttpException(
-        'There was an issue updating this user. Please try again.',
+        'There was an issue deleting this user. Please try again.',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
