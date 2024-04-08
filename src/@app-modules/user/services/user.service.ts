@@ -121,9 +121,8 @@ export class UserService {
       if (updateUserDto.firstName) user.firstName = updateUserDto.firstName;
       if (updateUserDto.lastName) user.lastName = updateUserDto.lastName;
 
-      if (updateUserDto.password) {
+      if (updateUserDto.password)
         await this._authService.updateUserPassword(updateUserDto.password);
-      }
 
       return await this._userRepository.save(user);
     } catch (error: any) {

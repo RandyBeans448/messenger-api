@@ -6,16 +6,22 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { CreateUserDTO } from '../dto/create-user.dto';
 import { User } from '../entities/user.entity';
 import { UpdateUserDTO } from '../dto/update-user.dto';
 import { DeleteResult } from 'typeorm';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('user')
+@UseGuards(AuthGuard('jwt'))
+@ApiTags('user')
 export class UserController {
   private _logger = new Logger(UserController.name);
   constructor(private readonly _userService: UserService) {}
@@ -48,8 +54,8 @@ export class UserController {
     }
   }
 
-  @Get('get-user-id')
-  async getUserById(id: string): Promise<User> {
+  @Get('get-user-id/:id')
+  async getUserById(@Param('id') id: string): Promise<User> {
     try {
       return this._userService.getUserById(id);
     } catch (error: any) {
