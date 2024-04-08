@@ -11,6 +11,7 @@ import { MessageModule } from './@app-modules/message/message.module';
 import { UserModule } from './@app-modules/user/user.module';
 import { DatabaseModule } from './@database/database.module';
 import { AuthModule } from './@auth/auth.module';
+import { UiEnvModule } from './@core/ui-env/ui-env.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AuthModule } from './@auth/auth.module';
       validationSchema: configValidationSchema,
     }),
     AuthModule,
+    UiEnvModule,
     DatabaseModule,
     UserModule,
     FriendModule,
