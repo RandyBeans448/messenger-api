@@ -2,8 +2,8 @@
 
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+// import { AppController } from './app.controller';
+// import { AppService } from './app.service';
 import { configValidationSchema } from './config.schema';
 import { ConversationModule } from './@app-modules/conversation/conversation.module';
 import { FriendModule } from './@app-modules/friend/friend.module';
@@ -12,6 +12,7 @@ import { UserModule } from './@app-modules/user/user.module';
 import { DatabaseModule } from './@database/database.module';
 import { AuthModule } from './@auth/auth.module';
 import { UiEnvModule } from './@core/ui-env/ui-env.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -28,6 +29,5 @@ import { UiEnvModule } from './@core/ui-env/ui-env.module';
     MessageModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
