@@ -10,7 +10,6 @@ export class UiEnvService {
   constructor(private _configService: ConfigService) {}
 
   public getEnv(projectName: UiEnvNamespace.ProjectNames): Record<string, any> {
-    console.log('squeezerotnw');
     switch (projectName) {
       case 'main_ui': {
         this._mainUiEnv = {
