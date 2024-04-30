@@ -1,9 +1,7 @@
 // app.module.ts
 
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-// import { AppController } from './app.controller';
-// import { AppService } from './app.service';
 import { configValidationSchema } from './config.schema';
 import { ConversationModule } from './@app-modules/conversation/conversation.module';
 import { FriendModule } from './@app-modules/friend/friend.module';
@@ -13,6 +11,8 @@ import { DatabaseModule } from './@database/database.module';
 import { AuthModule } from './@auth/auth.module';
 import { UiEnvModule } from './@core/ui-env/ui-env.module';
 import { AppController } from './app.controller';
+import { JsonBodyMiddleware } from './@utils/middleware/json-body.middleware';
+import { RawBodyMiddleware } from './@utils/middleware/raw-body.middleware';
 
 @Module({
   imports: [
@@ -30,4 +30,12 @@ import { AppController } from './app.controller';
   ],
   controllers: [AppController],
 })
-export class AppModule {}
+export class AppModule {
+  public configure(consumer: MiddlewareConsumer): void {
+    consumer
+      .apply(RawBodyMiddleware)
+      .forRoutes('*')
+      .apply(JsonBodyMiddleware)
+      .forRoutes('*');
+  }
+}
