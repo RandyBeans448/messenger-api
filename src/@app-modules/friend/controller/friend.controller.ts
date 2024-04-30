@@ -23,11 +23,12 @@ export class FriendController {
   constructor(private readonly _friendService: FriendService) {}
 
   @Post('add-friend')
+  // @UseGuards(AuthGuard('jwt'))
   async addFriend(@Req() req: Request, @Body() addFriend: AddFriendDTO) {
     console.log(req);
-    console.log(req.user);
-    console.log(addFriend);
-    return this._friendService.addFriend(req.user.id, addFriend);
+    console.log(req.user, 'req.user --------------------------');
+    console.log(addFriend, 'req.user --------------------------');
+    // return this._friendService.addFriend(req.user.id, addFriend);
   }
 
   @Patch('resolve-friend-request')

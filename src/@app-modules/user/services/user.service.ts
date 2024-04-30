@@ -32,6 +32,8 @@ export class UserService {
         .where('user.auth0Id = :auth0Id', { auth0Id })
         .getOne();
 
+      console.log(user, '-------');
+
       if (!user) {
         throw new UnauthorizedException();
       }
