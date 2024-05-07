@@ -9,6 +9,7 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
@@ -25,6 +26,21 @@ import { ApiTags } from '@nestjs/swagger';
 export class UserController {
   private _logger = new Logger(UserController.name);
   constructor(private readonly _userService: UserService) {}
+
+  @Get()
+  async getUser(@Req() req): Promise<any> {
+    const user: User = req.user;
+    return {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      friends: user.friends,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      deletedAt: user.deletedAt,
+    };
+  }
 
   @Post('create-new-user')
   async createUser(
