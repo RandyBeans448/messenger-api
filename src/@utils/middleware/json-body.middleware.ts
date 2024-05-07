@@ -4,7 +4,7 @@ import { Injectable, NestMiddleware } from '@nestjs/common';
 @Injectable()
 export class JsonBodyMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: () => any) {
-    console.log(req);
+    // console.log(req);
     json()(req, res, next);
   }
 }

@@ -28,7 +28,7 @@ export class Friend {
   @ManyToOne(() => User, (user) => user.friends)
   user: User;
 
-  @OneToOne(() => User)
+  @OneToOne(() => User, { eager: true })
   friend: User;
 
   @OneToMany(() => Conversation, (conversation) => conversation.friend, {

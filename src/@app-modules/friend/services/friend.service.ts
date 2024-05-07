@@ -19,7 +19,6 @@ export class FriendService {
     private readonly _userService: UserService,
   ) {}
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async addFriend(userId: string, createFriendDto: AddFriendDTO) {
     try {
       const newFriend: Friend = new Friend();
@@ -28,6 +27,7 @@ export class FriendService {
         createFriendDto.id,
       );
 
+      await this._friendRepository.save(newFriend);
       return `Friend request sent to ${newFriend.friend.firstName} ${newFriend.friend.lastName}`;
     } catch (error: any) {
       throw new HttpException(
@@ -76,7 +76,10 @@ export class FriendService {
 
   public async getAllFriends(): Promise<Friend[]> {
     try {
-      return await this._friendRepository.find();
+      console.log('cory town');
+      const friends = await this._friendRepository.find();
+      console.log(friends);
+      return friends;
     } catch (error: any) {
       throw new HttpException(
         'Error can not get friendship associations',
@@ -89,9 +92,12 @@ export class FriendService {
     try {
       return await this._friendRepository
         .createQueryBuilder('friends')
+        .leftJoinAndSelect('friends.user', 'user')
+        .leftJoinAndSelect('friends.friend', 'friend')
         .where('friends.userId = :userId', { userId })
         .getMany();
     } catch (error: any) {
+      console.log(error);
       throw new HttpException(
         'Error getting friends list',
         HttpStatus.INTERNAL_SERVER_ERROR,

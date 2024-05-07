@@ -11,9 +11,6 @@ export class UiEnvController {
   getUiEnv(
     @Param('project_name') projectName: UiEnvNamespace.ProjectNames,
   ): Record<string, any> {
-    console.log(projectName, 'geezer town');
-    const thing = this._uiEnvService.getEnv(projectName);
-    console.log(thing, 'geezer town');
-    return thing;
+    return this._uiEnvService.getEnv(projectName);
   }
 }

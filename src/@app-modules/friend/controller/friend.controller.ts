@@ -23,12 +23,8 @@ export class FriendController {
   constructor(private readonly _friendService: FriendService) {}
 
   @Post('add-friend')
-  // @UseGuards(AuthGuard('jwt'))
   async addFriend(@Req() req: Request, @Body() addFriend: AddFriendDTO) {
-    console.log(req);
-    console.log(req.user, 'req.user --------------------------');
-    console.log(addFriend, 'req.user --------------------------');
-    // return this._friendService.addFriend(req.user.id, addFriend);
+    return this._friendService.addFriend(req.user.id, addFriend);
   }
 
   @Patch('resolve-friend-request')
@@ -39,14 +35,15 @@ export class FriendController {
     return this._friendService.resolveFriendRequest(req.user.id, AddFriend);
   }
 
-  @Get(':id')
-  async getFriendById(@Param('id') id: string) {
-    return this._friendService.getFriendById(id);
-  }
+  // @Get(':id')
+  // async getFriendById(@Param('id') id: string) {
+  //   return this._friendService.getFriendById(id);
+  // }
 
-  @Get()
-  async getAllFriends() {
-    return this._friendService.getAllFriends();
+  @Get('get-all-friends')
+  async getAllFriends(@Req() req) {
+    console.log('get-all-friends')
+    return this._friendService.getAllOfUsersFriends(req.user.id);
   }
 
   @Delete(':id')

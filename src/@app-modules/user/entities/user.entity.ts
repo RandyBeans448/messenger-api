@@ -23,7 +23,10 @@ export class User {
   @Column()
   lastName: string;
 
-  @OneToMany(() => Friend, (friend) => friend.user, { nullable: true })
+  @OneToMany(() => Friend, (friend) => friend.user, {
+    nullable: true,
+    eager: true,
+  })
   friends: Friend[];
 
   @Column({ unique: true })
