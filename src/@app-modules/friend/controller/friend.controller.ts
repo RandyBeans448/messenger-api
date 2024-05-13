@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -24,7 +26,15 @@ export class FriendController {
 
   @Post('add-friend')
   async addFriend(@Req() req: Request, @Body() addFriend: AddFriendDTO) {
-    return this._friendService.addFriend(req.user.id, addFriend);
+    try {
+      return this._friendService.addFriend(req.user.id, addFriend);
+    } catch (error: any) {
+      console.log(error);
+      throw new HttpException(
+        'Error creating friendship association',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Patch('resolve-friend-request')
@@ -42,7 +52,7 @@ export class FriendController {
 
   @Get('get-all-friends')
   async getAllFriends(@Req() req) {
-    console.log('get-all-friends')
+    console.log('get-all-friends');
     return this._friendService.getAllOfUsersFriends(req.user.id);
   }
 

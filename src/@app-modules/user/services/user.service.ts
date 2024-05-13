@@ -104,13 +104,24 @@ export class UserService {
   }
 
   public getAllUsers(): Promise<User[]> {
-    return this._userRepository.find();
+    try {
+      return this._userRepository.find();
+    } catch (error: any) {
+      console.log(error);
+      this._logger.error(error);
+      throw error;
+      // throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
   }
 
   public async getUserById(id: string): Promise<User> {
-    return await this._userRepository.findOne({
-      where: { id },
-    });
+    try {
+      return await this._userRepository.findOne({ where: { id: id } });
+    } catch (error: any) {
+      console.log(error);
+      this._logger.error(error);
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
   }
 
   public async updateUser(updateUserDto: UpdateUserDTO): Promise<User> {
@@ -127,7 +138,8 @@ export class UserService {
       return await this._userRepository.save(user);
     } catch (error: any) {
       this._logger.error(error);
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw error;
+      // throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -148,6 +160,7 @@ export class UserService {
       return success;
     } catch (error: any) {
       this._logger.error(error);
+      throw error;
     }
   }
 }

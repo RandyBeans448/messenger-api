@@ -25,7 +25,7 @@ export class Friend {
   @Column()
   accepted: boolean = false;
 
-  @ManyToOne(() => User, (user) => user.friends)
+  @ManyToOne(() => User, (user) => user.friends, { eager: true })
   user: User;
 
   @OneToOne(() => User, { eager: true })
