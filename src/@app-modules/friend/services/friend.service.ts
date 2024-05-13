@@ -10,6 +10,7 @@ import { Friend } from '../entities/friend.entity';
 import { AddFriendDTO } from '../dto/add-friend.dto';
 import { UserService } from 'src/@app-modules/user/services/user.service';
 import { ResolveFriendRequestDTO } from '../dto/resolve-friend-request.dto';
+import { User } from 'src/@app-modules/user/entities/user.entity';
 
 @Injectable()
 export class FriendService {
@@ -22,14 +23,18 @@ export class FriendService {
   public async addFriend(userId: string, createFriendDto: AddFriendDTO) {
     try {
       const newFriend: Friend = new Friend();
-      newFriend.user = await this._userService.getUserById(userId);
-      newFriend.friend = await this._userService.getUserById(
+      const reqUser: User = await this._userService.getUserById(userId);
+      const friend: User = await this._userService.getUserById(
         createFriendDto.id,
       );
+  
+      newFriend.user = reqUser;
+      newFriend.friend = friend;
 
+      console.log(newFriend);
       await this._friendRepository.save(newFriend);
-      return `Friend request sent to ${newFriend.friend.firstName} ${newFriend.friend.lastName}`;
     } catch (error: any) {
+      console.log(error);
       throw new HttpException(
         'Error creating friendship association',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -90,12 +95,16 @@ export class FriendService {
 
   public async getAllOfUsersFriends(userId: string): Promise<Friend[]> {
     try {
-      return await this._friendRepository
-        .createQueryBuilder('friends')
-        .leftJoinAndSelect('friends.user', 'user')
-        .leftJoinAndSelect('friends.friend', 'friend')
-        .where('friends.userId = :userId', { userId })
-        .getMany();
+      const thing = await this._friendRepository.find();
+        // .createQueryBuilder('friends')
+        // .leftJoinAndSelect('friends.user', 'user')
+        // .leftJoinAndSelect('friends.friend', 'friend')
+        // .where('friends.userId = :userId', { userId })
+        // .getMany();
+
+      console.log(thing);
+
+      return thing;
     } catch (error: any) {
       console.log(error);
       throw new HttpException(
