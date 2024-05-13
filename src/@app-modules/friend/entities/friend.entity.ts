@@ -8,8 +8,8 @@ import {
   DeleteDateColumn,
   ManyToOne,
   OneToMany,
-  Column,
   OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity'; // Assuming you have a User entity
 import { Conversation } from '../../conversation/entities/conversation.entity'; // Assuming you have a Conversation entity
@@ -19,16 +19,11 @@ export class Friend {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  pending: boolean = true;
-
-  @Column()
-  accepted: boolean = false;
-
   @ManyToOne(() => User, (user) => user.friends)
   user: User;
 
   @OneToOne(() => User, { eager: true })
+  @JoinColumn()
   friend: User;
 
   @OneToMany(() => Conversation, (conversation) => conversation.friend, {

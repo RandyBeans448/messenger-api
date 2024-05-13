@@ -11,6 +11,7 @@ import { AddFriendDTO } from '../dto/add-friend.dto';
 import { UserService } from 'src/@app-modules/user/services/user.service';
 import { ResolveFriendRequestDTO } from '../dto/resolve-friend-request.dto';
 
+
 @Injectable()
 export class FriendService {
   constructor(
@@ -22,14 +23,16 @@ export class FriendService {
   public async addFriend(userId: string, createFriendDto: AddFriendDTO) {
     try {
       const newFriend: Friend = new Friend();
+
       newFriend.user = await this._userService.getUserById(userId);
       newFriend.friend = await this._userService.getUserById(
         createFriendDto.id,
       );
 
+      console.log(newFriend);
       await this._friendRepository.save(newFriend);
-      return `Friend request sent to ${newFriend.friend.firstName} ${newFriend.friend.lastName}`;
     } catch (error: any) {
+      console.log(error);
       throw new HttpException(
         'Error creating friendship association',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -51,11 +54,11 @@ export class FriendService {
       friendRequest.pending = false;
       friendRequest.accepted = resolveFriendRequestDto.accepted;
 
-      if (friendRequest.accepted) {
-        await this.addFriend(userId, { id: friendRequest.friend.id });
-      } else {
-        await this.deleteFriend(friendRequest.id);
-      }
+      // if (friendRequest.accepted) {
+      //   await this.addFriend(user, { id: friendRequest.friend.id });
+      // } else {
+      //   await this.deleteFriend(friendRequest.id);
+      // }
     } catch (error: any) {
       throw new HttpException(
         'Error resolving this friendship request',
@@ -67,6 +70,7 @@ export class FriendService {
   public async getFriendById(id: string): Promise<Friend> {
     const friend: Friend = await this._friendRepository.findOne({
       where: { id },
+      relations: ['user', 'friend'],
     });
     if (!friend) {
       throw new NotFoundException('Friend not found');
@@ -90,12 +94,16 @@ export class FriendService {
 
   public async getAllOfUsersFriends(userId: string): Promise<Friend[]> {
     try {
-      return await this._friendRepository
-        .createQueryBuilder('friends')
-        .leftJoinAndSelect('friends.user', 'user')
-        .leftJoinAndSelect('friends.friend', 'friend')
-        .where('friends.userId = :userId', { userId })
-        .getMany();
+      const thing = await this._friendRepository.find();
+      // .createQueryBuilder('friends')
+      // .leftJoinAndSelect('friends.user', 'user')
+      // .leftJoinAndSelect('friends.friend', 'friend')
+      // .where('friends.userId = :userId', { userId })
+      // .getMany();
+
+      console.log(thing);
+
+      return thing;
     } catch (error: any) {
       console.log(error);
       throw new HttpException(
