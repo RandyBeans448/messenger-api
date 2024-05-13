@@ -30,6 +30,7 @@ export class UserController {
   @Get()
   async getUser(@Req() req): Promise<any> {
     const user: User = req.user;
+    console.log(user);
     return {
       id: user.id,
       firstName: user.firstName,

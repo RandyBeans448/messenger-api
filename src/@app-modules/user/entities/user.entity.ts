@@ -7,7 +7,8 @@ import {
   DeleteDateColumn,
   OneToMany,
 } from 'typeorm';
-import { Friend } from '../../friend/entities/friend.entity'; // Assuming you have a Friend entity
+import { Friend } from '../../friend/entities/friend.entity';
+import { FriendRequest } from 'src/@app-modules/friend-request/entities/friend-request.entity';
 
 @Entity('users')
 export class User {
@@ -25,9 +26,17 @@ export class User {
 
   @OneToMany(() => Friend, (friend) => friend.user, {
     nullable: true,
-    eager: true,
   })
   friends: Friend[];
+
+  @OneToMany(
+    () => FriendRequest,
+    (friendRequests) => friendRequests.requestSentBy,
+    {
+      nullable: true,
+    },
+  )
+  friendRequests: FriendRequest[];
 
   @Column({ unique: true })
   email: string;
