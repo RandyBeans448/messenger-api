@@ -1,20 +1,5 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpException,
-  HttpStatus,
-  Param,
-  Patch,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Delete, Get, Param, Req, UseGuards } from '@nestjs/common';
 import { FriendService } from '../services/friend.service';
-import { AddFriendDTO } from '../dto/add-friend.dto';
-import { ResolveFriendRequestDTO } from '../dto/resolve-friend-request.dto';
-import { Request } from 'src/@core/request.interface';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -24,27 +9,6 @@ import { ApiTags } from '@nestjs/swagger';
 export class FriendController {
   constructor(private readonly _friendService: FriendService) {}
 
-  @Post('add-friend')
-  async addFriend(@Req() req: Request, @Body() addFriend: AddFriendDTO) {
-    try {
-      return this._friendService.addFriend(req.user.id, addFriend);
-    } catch (error: any) {
-      console.log(error);
-      throw new HttpException(
-        'Error creating friendship association',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  @Patch('resolve-friend-request')
-  async resolveFriendRequest(
-    @Req() req,
-    @Body() AddFriend: ResolveFriendRequestDTO,
-  ) {
-    return this._friendService.resolveFriendRequest(req.user.id, AddFriend);
-  }
-
   @Get(':id')
   async getFriendById(@Param('id') id: string) {
     return this._friendService.getFriendById(id);
@@ -52,7 +16,6 @@ export class FriendController {
 
   @Get('get-all-friends')
   async getAllFriends(@Req() req) {
-    console.log('get-all-friends');
     return this._friendService.getAllOfUsersFriends(req.user.id);
   }
 

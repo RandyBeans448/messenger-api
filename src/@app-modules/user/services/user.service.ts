@@ -26,11 +26,9 @@ export class UserService {
     try {
       const userQuery: SelectQueryBuilder<User> = await this._userRepository
         .createQueryBuilder('user')
+        .leftJoinAndSelect('user.friendRequests', 'friendRequests');
         // .leftJoinAndSelect('user.friends', 'friends')
         // .leftJoinAndSelect('friends.friend', 'friend');
-        // createQueryBuilder('user')
-        .leftJoinAndSelect('user.friends', 'friends')
-        .leftJoinAndSelect('friends.friend', 'friend');
 
       const user: User = await userQuery
         .where('user.auth0Id = :auth0Id', { auth0Id })
@@ -91,6 +89,9 @@ export class UserService {
         auth0Id: authUser.data.user_id,
       };
 
+      // console.log(authUser);
+      // console.log(userData);
+
       user = await this._userRepository.save(userData).catch((error) => {
         throw error;
       });
@@ -120,7 +121,7 @@ export class UserService {
 
   public async getUserById(id: string): Promise<User> {
     try {
-      console.log(id);
+      // console.log(id);
       return await this._userRepository.findOne({ where: { id: id } });
     } catch (error: any) {
       console.log(error);

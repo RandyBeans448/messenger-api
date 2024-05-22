@@ -17,8 +17,9 @@ import { CreateUserDTO } from '../dto/create-user.dto';
 import { User } from '../entities/user.entity';
 import { UpdateUserDTO } from '../dto/update-user.dto';
 import { DeleteResult } from 'typeorm';
-import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
+import { Request } from 'src/@core/request.interface';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('user')
 @UseGuards(AuthGuard('jwt'))
@@ -28,9 +29,9 @@ export class UserController {
   constructor(private readonly _userService: UserService) {}
 
   @Get()
-  async getUser(@Req() req): Promise<any> {
+  async getUser(@Req() req: Request): Promise<any> {
     const user: User = req.user;
-    console.log(user);
+    console.log(user, 'this user cunt');
     return {
       id: user.id,
       firstName: user.firstName,

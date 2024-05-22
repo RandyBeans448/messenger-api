@@ -13,6 +13,7 @@ import { UiEnvModule } from './@core/ui-env/ui-env.module';
 import { AppController } from './app.controller';
 import { JsonBodyMiddleware } from './@utils/middleware/json-body.middleware';
 import { RawBodyMiddleware } from './@utils/middleware/raw-body.middleware';
+import { FriendRequestModule } from './@app-modules/friend-request/friend-request.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { RawBodyMiddleware } from './@utils/middleware/raw-body.middleware';
     DatabaseModule,
     UserModule,
     FriendModule,
+    FriendRequestModule,
     ConversationModule,
     MessageModule,
   ],

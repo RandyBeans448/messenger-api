@@ -7,10 +7,9 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { Friend } from '../entities/friend.entity';
-import { AddFriendDTO } from '../dto/add-friend.dto';
 import { UserService } from 'src/@app-modules/user/services/user.service';
-import { ResolveFriendRequestDTO } from '../dto/resolve-friend-request.dto';
-
+import { FriendRequest } from 'src/@app-modules/friend-request/entities/friend-request.entity';
+import { User } from 'src/@app-modules/user/entities/user.entity';
 
 @Injectable()
 export class FriendService {
@@ -20,17 +19,27 @@ export class FriendService {
     private readonly _userService: UserService,
   ) {}
 
-  public async addFriend(userId: string, createFriendDto: AddFriendDTO) {
+  public async addFriend(acceptedFriendRequest: FriendRequest) {
     try {
-      const newFriend: Friend = new Friend();
+      const newFriendForSender: Friend = new Friend();
+      const newFriendForReceiver: Friend = new Friend();
 
-      newFriend.user = await this._userService.getUserById(userId);
-      newFriend.friend = await this._userService.getUserById(
-        createFriendDto.id,
+      const sender: User = await this._userService.getUserById(
+        acceptedFriendRequest.requestSentBy.id,
       );
 
-      console.log(newFriend);
-      await this._friendRepository.save(newFriend);
+      const receiver: User = await this._userService.getUserById(
+        acceptedFriendRequest.receiver.id,
+      );
+
+      newFriendForSender.user = sender;
+      newFriendForSender.friend = receiver;
+
+      newFriendForReceiver.user = receiver;
+      newFriendForReceiver.friend = sender;
+
+      await this._friendRepository.save(newFriendForSender);
+      await this._friendRepository.save(newFriendForReceiver);
     } catch (error: any) {
       console.log(error);
       throw new HttpException(
@@ -40,32 +49,32 @@ export class FriendService {
     }
   }
 
-  public async resolveFriendRequest(
-    userId: string,
-    resolveFriendRequestDto: ResolveFriendRequestDTO,
-  ) {
-    try {
-      const friendRequest: Friend = await this._friendRepository.findOne({
-        where: {
-          id: resolveFriendRequestDto.id,
-        },
-      });
+  // public async resolveFriendRequest(
+  //   userId: string,
+  //   resolveFriendRequestDto: ResolveFriendRequestDTO,
+  // ) {
+  //   try {
+  //     const friendRequest: Friend = await this._friendRepository.findOne({
+  //       where: {
+  //         id: resolveFriendRequestDto.id,
+  //       },
+  //     });
 
-      friendRequest.pending = false;
-      friendRequest.accepted = resolveFriendRequestDto.accepted;
+  //     // friendRequest.pending = false;
+  //     // friendRequest.accepted = resolveFriendRequestDto.accepted;
 
-      // if (friendRequest.accepted) {
-      //   await this.addFriend(user, { id: friendRequest.friend.id });
-      // } else {
-      //   await this.deleteFriend(friendRequest.id);
-      // }
-    } catch (error: any) {
-      throw new HttpException(
-        'Error resolving this friendship request',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
+  //     // if (friendRequest.accepted) {
+  //     //   await this.addFriend(user, { id: friendRequest.friend.id });
+  //     // } else {
+  //     //   await this.deleteFriend(friendRequest.id);
+  //     // }
+  //   } catch (error: any) {
+  //     throw new HttpException(
+  //       'Error resolving this friendship request',
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
 
   public async getFriendById(id: string): Promise<Friend> {
     const friend: Friend = await this._friendRepository.findOne({
@@ -80,10 +89,7 @@ export class FriendService {
 
   public async getAllFriends(): Promise<Friend[]> {
     try {
-      console.log('cory town');
-      const friends = await this._friendRepository.find();
-      console.log(friends);
-      return friends;
+      return await this._friendRepository.find();
     } catch (error: any) {
       throw new HttpException(
         'Error can not get friendship associations',
@@ -100,8 +106,6 @@ export class FriendService {
       // .leftJoinAndSelect('friends.friend', 'friend')
       // .where('friends.userId = :userId', { userId })
       // .getMany();
-
-      console.log(thing);
 
       return thing;
     } catch (error: any) {
