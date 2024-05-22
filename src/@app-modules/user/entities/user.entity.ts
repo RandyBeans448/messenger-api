@@ -8,7 +8,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Friend } from '../../friend/entities/friend.entity';
-import { FriendRequest } from 'src/@app-modules/friend-request/entities/friend-request.entity';
+import { FriendRequest } from '../../friend-request/entities/friend-request.entity';
 
 @Entity('users')
 export class User {

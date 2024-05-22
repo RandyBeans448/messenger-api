@@ -1,4 +1,4 @@
-import { User } from 'src/@app-modules/user/entities/user.entity';
+import { User } from '../../user/entities/user.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -6,22 +6,15 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   OneToOne,
-  Column,
-  OneToMany,
+  ManyToOne,
 } from 'typeorm';
 
-@Entity('messages')
+@Entity('friend_request')
 export class FriendRequest {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  pending: boolean = true;
-
-  @Column()
-  accepted: boolean = false;
-
-  @OneToMany(() => User, (user) => user.friendRequests)
+  @ManyToOne(() => User, (user) => user.friendRequests)
   requestSentBy: User;
 
   @OneToOne(() => User, { eager: true })
