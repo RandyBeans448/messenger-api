@@ -7,6 +7,7 @@ import {
   DeleteDateColumn,
   OneToOne,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity('friend_request')
@@ -18,6 +19,7 @@ export class FriendRequest {
   requestSentBy: User;
 
   @OneToOne(() => User, { eager: true })
+  @JoinColumn()
   receiver: User;
 
   @CreateDateColumn({ type: 'timestamp' })
