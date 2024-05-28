@@ -6,6 +6,7 @@ import { UserService } from 'src/@app-modules/user/services/user.service';
 import { AddFriendDTO } from '../dto/add-friend.dto';
 import { ResolveFriendRequestDTO } from '../dto/resolve-friend-request.dto';
 import { FriendService } from 'src/@app-modules/friend/services/friend.service';
+import { Friend } from 'src/@app-modules/friend/entities/friend.entity';
 
 @Injectable()
 export class FriendRequestService {
@@ -18,16 +19,40 @@ export class FriendRequestService {
 
   public async addFriend(userId: string, createFriendDto: AddFriendDTO) {
     try {
-      const newFriend: FriendRequest = new FriendRequest();
+      if (userId === createFriendDto.id) {
+        throw new HttpException(
+          'Cannot add yourself as a friend',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
-      newFriend.requestSentBy = await this._userService.getUserById(userId);
-      newFriend.receiver = await this._userService.getUserById(
-        createFriendDto.id,
+      const [user, friendCandidate] = await Promise.all([
+        this._userService.getUserById(userId, ['friends']),
+        this._userService.getUserById(createFriendDto.id, []),
+      ]);
+
+      if (!user || !friendCandidate) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      const isAlreadyFriend = user.friends.some(
+        (friend: Friend) => friend.friend.id === createFriendDto.id,
       );
+
+      if (isAlreadyFriend) {
+        throw new HttpException(
+          'You are already friends with this user',
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      const newFriend: FriendRequest = new FriendRequest();
+      newFriend.requestSentBy = user;
+      newFriend.receiver = friendCandidate;
 
       await this._friendRequestRepository.save(newFriend);
     } catch (error: any) {
-      console.log(error);
+      console.error(error);
       throw new HttpException(
         'Error creating friendship association',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -36,22 +61,24 @@ export class FriendRequestService {
   }
 
   public async resolveFriendRequest(
-    userId: string,
     resolveFriendRequestDto: ResolveFriendRequestDTO,
-  ) {
+  ): Promise<'Friend request accepted' | 'Friend request declined'> {
     try {
       const friendRequest: FriendRequest =
         await this._friendRequestRepository.findOne({
           where: {
-            id: resolveFriendRequestDto.id,
+            id: resolveFriendRequestDto.friendRequestId,
           },
+          relations: ['requestSentBy'],
         });
 
-      if (resolveFriendRequestDto.accepted) {
+      if (resolveFriendRequestDto.response) {
         await this._friendService.addFriend(friendRequest);
         await this.deleteFriend(friendRequest.id);
+        return 'Friend request accepted';
       } else {
         await this.deleteFriend(friendRequest.id);
+        return 'Friend request declined';
       }
     } catch (error: any) {
       throw new HttpException(

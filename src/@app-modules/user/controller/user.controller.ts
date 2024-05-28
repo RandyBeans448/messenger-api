@@ -76,7 +76,7 @@ export class UserController {
   @Get('get-user-id/:id')
   async getUserById(@Param('id') id: string): Promise<User> {
     try {
-      return this._userService.getUserById(id);
+      return this._userService.getUserById(id, []);
     } catch (error: any) {
       this._logger.error(error);
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);

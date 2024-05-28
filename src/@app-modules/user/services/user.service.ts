@@ -25,17 +25,17 @@ export class UserService {
   public async getUserByAuthId(auth0Id: string): Promise<User> {
     try {
       const userQuery: SelectQueryBuilder<User> = await this._userRepository
-      .createQueryBuilder('user')
-      .leftJoinAndSelect('user.friendRequests', 'friendRequests')
-      .leftJoinAndSelect('friendRequests.receiver', 'receiver');
-        // .leftJoinAndSelect('user.friends', 'friends')
-        // .leftJoinAndSelect('friends.friend', 'friend');
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.friendRequests', 'friendRequests')
+        .leftJoinAndSelect('friendRequests.receiver', 'receiver');
+      // .leftJoinAndSelect('user.friends', 'friends')
+      // .leftJoinAndSelect('friends.friend', 'friend');
 
       const user: User = await userQuery
         .where('user.auth0Id = :auth0Id', { auth0Id })
         .getOne();
 
-      console.log(user);  
+      console.log(user);
 
       if (!user) {
         throw new UnauthorizedException();
@@ -124,10 +124,13 @@ export class UserService {
     }
   }
 
-  public async getUserById(id: string): Promise<User> {
+  public async getUserById(id: string, relations: string[]): Promise<User> {
     try {
       // console.log(id);
-      return await this._userRepository.findOne({ where: { id: id } });
+      return await this._userRepository.findOne({
+        where: { id: id },
+        relations: relations,
+      });
     } catch (error: any) {
       console.log(error);
       this._logger.error(error);
@@ -137,7 +140,7 @@ export class UserService {
 
   public async updateUser(updateUserDto: UpdateUserDTO): Promise<User> {
     try {
-      const user: User = await this.getUserById(updateUserDto.userId);
+      const user: User = await this.getUserById(updateUserDto.userId, []);
 
       if (updateUserDto.email) user.email = updateUserDto.email;
       if (updateUserDto.firstName) user.firstName = updateUserDto.firstName;
