@@ -21,15 +21,19 @@ export class FriendService {
 
   public async addFriend(acceptedFriendRequest: FriendRequest) {
     try {
+      console.log(acceptedFriendRequest);
+
       const newFriendForSender: Friend = new Friend();
       const newFriendForReceiver: Friend = new Friend();
 
       const sender: User = await this._userService.getUserById(
         acceptedFriendRequest.requestSentBy.id,
+        [],
       );
 
       const receiver: User = await this._userService.getUserById(
         acceptedFriendRequest.receiver.id,
+        [],
       );
 
       newFriendForSender.user = sender;

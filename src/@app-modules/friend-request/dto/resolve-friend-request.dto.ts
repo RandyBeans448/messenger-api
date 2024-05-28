@@ -4,9 +4,9 @@ import { IsNotEmpty } from 'class-validator';
 export class ResolveFriendRequestDTO {
   @IsNotEmpty()
   @ApiProperty()
-  id: string;
+  friendRequestId: string;
 
   @IsNotEmpty()
   @ApiProperty()
-  accepted: boolean;
+  response: boolean;
 }

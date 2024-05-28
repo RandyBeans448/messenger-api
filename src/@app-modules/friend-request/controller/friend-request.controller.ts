@@ -36,14 +36,10 @@ export class FriendRequestController {
 
   @Patch('resolve-friend-request')
   async resolveFriendRequest(
-    @Req() req: Request,
     @Body() addFriend: ResolveFriendRequestDTO,
-  ) {
+  ): Promise<'Friend request accepted' | 'Friend request declined'> {
     try {
-      return this._friendRequestService.resolveFriendRequest(
-        req.user.id,
-        addFriend,
-      );
+      return this._friendRequestService.resolveFriendRequest(addFriend);
     } catch (error: any) {
       console.log(error);
       throw new HttpException(
