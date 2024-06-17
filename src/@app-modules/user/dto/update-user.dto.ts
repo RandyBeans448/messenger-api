@@ -1,26 +1,17 @@
 import { Optional } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsStrongPassword } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 
 export class UpdateUserDTO {
   @IsNotEmpty()
   @ApiProperty()
   userId: string;
 
-  @Optional()
+  @IsNotEmpty()
   @ApiProperty()
-  firstName: string;
-
-  @Optional()
-  @ApiProperty()
-  lastName: string;
+  username: string;
 
   @Optional()
   @ApiProperty()
   email: string;
-
-  @Optional()
-  @IsStrongPassword()
-  @ApiProperty()
-  password: string;
 }
