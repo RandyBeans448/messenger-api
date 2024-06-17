@@ -19,10 +19,7 @@ export class User {
   auth0Id: string;
 
   @Column()
-  firstName: string;
-
-  @Column()
-  lastName: string;
+  username: string;
 
   @OneToMany(() => Friend, (friend) => friend.user, {
     nullable: true,

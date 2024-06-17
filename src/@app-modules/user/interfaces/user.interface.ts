@@ -5,8 +5,7 @@ export namespace UserNamespace {
   export interface PreparedDataInterface {
     id: string;
     auth0Id: string;
-    firstName: string;
-    lastName: string;
+    username: string;
     email: string;
     createdAt: Date;
     updatedAt: Date;

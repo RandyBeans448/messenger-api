@@ -1,6 +1,6 @@
-import { startCase } from 'lodash';
 import { ConfigService } from '@nestjs/config';
 import { Injectable, Logger } from '@nestjs/common';
+import * as passGenerator from 'generate-password';
 import {
   ApiResponse,
   GetUsers200ResponseOneOfInner,
@@ -9,7 +9,6 @@ import {
   PostPasswordChange201Response,
   UserCreate,
 } from 'auth0';
-import * as passGenerator from 'generate-password';
 
 @Injectable()
 export class Auth0Service {
@@ -30,41 +29,24 @@ export class Auth0Service {
     } as ManagementClientOptionsWithClientCredentials);
   }
 
-  public async createUser(
-    email: string,
-    firstName: string,
-    lastName: string,
-    password: string,
-    auth0Options: { verifyEmail: boolean } = { verifyEmail: true },
-  ): Promise<any> {
+  public async createUser(email: string, username: string): Promise<any> {
     this._logger.log('Creating New Auth User');
+
+    const generatedPassword: string = await passGenerator.generate({
+      length: 10,
+      symbols: true,
+      numbers: true,
+    });
 
     const userObj: UserCreate = {
       email: email,
-      name: startCase(`${firstName} ${lastName}`),
-      family_name: startCase(lastName),
-      given_name: startCase(firstName),
-      password,
-      verify_email: auth0Options.verifyEmail,
+      username: username,
+      password: generatedPassword,
+      verify_email: false, // We don't need to verify as we will send a welcome email for them to set their own password
       connection: 'Username-Password-Authentication',
     };
 
-    // If no password is set then generate one
-    if (!password) {
-      userObj.password = passGenerator.generate({
-        length: 10,
-        symbols: true,
-        numbers: true,
-      });
-    }
-
-    const user: ApiResponse<GetUsers200ResponseOneOfInner> =
-      await this.auth0.users.create(userObj).catch((e) => {
-        this._logger.error(e.message, e.stack);
-        throw new Error(e.message);
-      });
-
-    return user;
+    return await this._createUser(userObj);
   }
 
   public async updateUserPassword(
@@ -134,6 +116,15 @@ export class Auth0Service {
     } catch (e) {
       this._logger.error(e.message, e.stack);
       throw new Error(`User with ID ${userId} was NOT removed from Auth0`);
+    }
+  }
+
+  private async _createUser(userObj): Promise<ApiResponse<GetUsers200ResponseOneOfInner>> {
+    try {
+      return await this.auth0.users.create(userObj);
+    } catch (e) {
+      this._logger.error(e.message, e.stack);
+      throw e; // Rethrow the original error
     }
   }
 }
