@@ -1,7 +1,18 @@
+import { FriendRequest } from 'src/@app-modules/friend-request/entities/friend-request.entity';
 import { Friend } from 'src/@app-modules/friend/entities/friend.entity';
 
 /* eslint-disable @typescript-eslint/no-namespace */
 export namespace UserNamespace {
+  export interface LoginUserInterface {
+    id: string;
+    username: string;
+    email: string;
+    friend: Friend[];
+    friendRequests: FriendRequest[];
+    createdAt: Date;
+    updatedAt: Date;
+  }
+
   export interface PreparedDataInterface {
     id: string;
     auth0Id: string;

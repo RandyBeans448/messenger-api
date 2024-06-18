@@ -119,7 +119,9 @@ export class Auth0Service {
     }
   }
 
-  private async _createUser(userObj): Promise<ApiResponse<GetUsers200ResponseOneOfInner>> {
+  private async _createUser(
+    userObj,
+  ): Promise<ApiResponse<GetUsers200ResponseOneOfInner>> {
     try {
       return await this.auth0.users.create(userObj);
     } catch (e) {
