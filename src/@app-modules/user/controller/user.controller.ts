@@ -5,7 +5,6 @@ import {
   Get,
   HttpException,
   HttpStatus,
-  Headers,
   Logger,
   Param,
   Patch,
@@ -22,6 +21,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'src/@core/request.interface';
 import { AuthGuard } from '@nestjs/passport';
 import { IncomingHttpHeaders } from 'http';
+import { UserNamespace } from '../interfaces/user.interface';
 
 @Controller('user')
 @ApiTags('user')
@@ -31,18 +31,17 @@ export class UserController {
 
   @Get()
   @UseGuards(AuthGuard('jwt'))
-  async getUser(@Req() req: Request): Promise<any> {
-    const user: User = req.user;
-    console.log(user, 'this user cunt');
+  async getUser(
+    @Req() req: Request,
+  ): Promise<UserNamespace.LoginUserInterface> {
     return {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      friend: user.friends,
-      friendRequests: user.friendRequests,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-      deletedAt: user.deletedAt,
+      id: req.user.id,
+      username: req.user.username,
+      email: req.user.email,
+      friend: req.user.friends,
+      friendRequests: req.user.friendRequests,
+      createdAt: req.user.createdAt,
+      updatedAt: req.user.updatedAt,
     };
   }
 

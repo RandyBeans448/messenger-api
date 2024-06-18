@@ -54,7 +54,6 @@ export class UserService {
     let authUser = null;
     let userData = {};
 
-    // Check if the idempotency key has been seen before
     if (this.seenIdempotencyKeys.has(idempotencyKey)) {
       throw new HttpException(
         'Idempotency key already seen before',
@@ -62,7 +61,6 @@ export class UserService {
       );
     }
 
-    // Store the idempotency key
     this.seenIdempotencyKeys.add(idempotencyKey);
 
     try {
