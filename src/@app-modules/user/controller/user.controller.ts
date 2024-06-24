@@ -88,6 +88,17 @@ export class UserController {
     }
   }
 
+  @Get('available-users')
+  @UseGuards(AuthGuard('jwt'))
+  async getUsers(@Req() request: Request): Promise<User[]> {
+    try {
+      return this._userService.getOtherUsers(request.user.id);
+    } catch (error: any) {
+      this._logger.error(error);
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+  }
+
   @Patch('update-user')
   @UseGuards(AuthGuard('jwt'))
   async updateUser(@Body() updateUserDto: UpdateUserDTO): Promise<User> {

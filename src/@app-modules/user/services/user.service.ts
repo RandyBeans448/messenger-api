@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, Repository, SelectQueryBuilder } from 'typeorm';
+import { DeleteResult, Not, Repository, SelectQueryBuilder } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { Auth0Service } from 'src/@auth/services/auth0.service';
 import { UpdateUserDTO } from '../dto/update-user.dto';
@@ -127,6 +127,19 @@ export class UserService {
       console.log(error);
       this._logger.error(error);
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  public async getOtherUsers(userId: string) {
+    try {
+      return await this._userRepository.find({
+        where: {
+          id: Not(userId),
+        },
+      });
+    } catch (error: any) {
+      this._logger.error(error);
+      throw error;
     }
   }
 
