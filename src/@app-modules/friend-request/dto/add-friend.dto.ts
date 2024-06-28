@@ -4,5 +4,5 @@ import { IsNotEmpty } from 'class-validator';
 export class AddFriendDTO {
   @IsNotEmpty()
   @ApiProperty()
-  id: string;
+  newFriendId: string;
 }
