@@ -3,6 +3,7 @@ import {
   Controller,
   HttpException,
   HttpStatus,
+  Logger,
   Patch,
   Post,
   Req,
@@ -19,12 +20,17 @@ import { ResolveFriendRequestDTO } from '../dto/resolve-friend-request.dto';
 @UseGuards(AuthGuard('jwt'))
 @ApiTags('friend-request')
 export class FriendRequestController {
+  private readonly _logger = new Logger(FriendRequestController.name);
   constructor(private readonly _friendRequestService: FriendRequestService) {}
 
   @Post('add-friend')
-  async addFriend(@Req() req: Request, @Body() addFriend: AddFriendDTO) {
+  public async addFriend(@Req() req: Request, @Body() newFriend: AddFriendDTO) {
     try {
-      return this._friendRequestService.addFriend(req.user.id, addFriend);
+      await this._friendRequestService.addFriend(
+        req.user.id,
+        newFriend.newFriendId,
+      );
+      this._logger.log(`Added friend with id of: ${newFriend.newFriendId}`);
     } catch (error: any) {
       console.log(error);
       throw new HttpException(
@@ -35,7 +41,7 @@ export class FriendRequestController {
   }
 
   @Patch('resolve-friend-request')
-  async resolveFriendRequest(
+  public async resolveFriendRequest(
     @Body() addFriend: ResolveFriendRequestDTO,
   ): Promise<'Friend request accepted' | 'Friend request declined'> {
     try {

@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FriendRequest } from '../entities/friend-request.entity';
 import { UserService } from 'src/@app-modules/user/services/user.service';
-import { AddFriendDTO } from '../dto/add-friend.dto';
 import { ResolveFriendRequestDTO } from '../dto/resolve-friend-request.dto';
 import { FriendService } from 'src/@app-modules/friend/services/friend.service';
 import { Friend } from 'src/@app-modules/friend/entities/friend.entity';
@@ -17,9 +16,9 @@ export class FriendRequestService {
     private readonly _userService: UserService,
   ) {}
 
-  public async addFriend(userId: string, createFriendDto: AddFriendDTO) {
+  public async addFriend(userId: string, createFriendDto: string) {
     try {
-      if (userId === createFriendDto.id) {
+      if (userId === createFriendDto) {
         throw new HttpException(
           'Cannot add yourself as a friend',
           HttpStatus.BAD_REQUEST,
@@ -28,7 +27,7 @@ export class FriendRequestService {
 
       const [user, friendCandidate] = await Promise.all([
         this._userService.getUserById(userId, ['friends']),
-        this._userService.getUserById(createFriendDto.id, []),
+        this._userService.getUserById(createFriendDto, []),
       ]);
 
       if (!user || !friendCandidate) {
@@ -36,7 +35,7 @@ export class FriendRequestService {
       }
 
       const isAlreadyFriend = user.friends.some(
-        (friend: Friend) => friend.friend.id === createFriendDto.id,
+        (friend: Friend) => friend.friend.id === createFriendDto,
       );
 
       if (isAlreadyFriend) {
