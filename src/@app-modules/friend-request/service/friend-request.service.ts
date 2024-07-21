@@ -1,6 +1,6 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { FriendRequest } from '../entities/friend-request.entity';
 import { UserService } from 'src/@app-modules/user/services/user.service';
 import { ResolveFriendRequestDTO } from '../dto/resolve-friend-request.dto';
@@ -9,6 +9,7 @@ import { Friend } from 'src/@app-modules/friend/entities/friend.entity';
 
 @Injectable()
 export class FriendRequestService {
+  private _logger: Logger = new Logger(FriendRequestService.name);
   constructor(
     @InjectRepository(FriendRequest)
     private readonly _friendRequestRepository: Repository<FriendRequest>,
@@ -56,6 +57,21 @@ export class FriendRequestService {
         'Error creating friendship association',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  public async getReceivedFriendRequests(
+    userId: string,
+  ): Promise<SelectQueryBuilder<FriendRequest>> {
+    try {
+      return await this._friendRequestRepository
+        .createQueryBuilder('friendRequest')
+        .leftJoinAndSelect('friendRequest.requestSentBy', 'requestSentBy')
+        .where('friendRequest.receiver.id = :userId', { userId })
+        .execute();
+    } catch (error: any) {
+      this._logger.error(error);
+      throw error;
     }
   }
 
