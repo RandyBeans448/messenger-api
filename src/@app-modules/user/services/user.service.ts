@@ -28,9 +28,9 @@ export class UserService {
     try {
       const userQuery: SelectQueryBuilder<User> = await this._userRepository
         .createQueryBuilder('user')
-        .leftJoinAndSelect('user.friends', 'friends') // Assuming 'friends' is the relation in the User entity
-        .leftJoinAndSelect('friends.friend', 'friend') // Join friends' friends, alias it as 'friend'
-        .leftJoinAndSelect('user.friendRequests', 'friendRequests') // Assuming 'friendRequests' is the relation in the User entity
+        .leftJoinAndSelect('user.friends', 'friends')
+        .leftJoinAndSelect('friends.friend', 'friend')
+        .leftJoinAndSelect('user.friendRequests', 'friendRequests')
         .leftJoinAndSelect('friendRequests.receiver', 'receiver');
 
       const user: User = await userQuery
@@ -112,6 +112,22 @@ export class UserService {
       return this._userRepository.find();
     } catch (error: any) {
       console.log(error);
+      this._logger.error(error);
+      throw error;
+    }
+  }
+
+  public async getAllUsersWithNoPendingRequests(userId) {
+    try {
+      return await this._userRepository.find({
+        relations: ['friendRequests'],
+        where: {
+          friendRequests: {
+            requestSentBy: Not(userId),
+          },
+        },
+      });
+    } catch (error: any) {
       this._logger.error(error);
       throw error;
     }

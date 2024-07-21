@@ -20,7 +20,7 @@ export class Auth0Service {
     this._init();
   }
 
-  private _init() {
+  private _init(): void {
     this.auth0 = new ManagementClient({
       domain: this._config.get('AUTH0_DOMAIN'),
       clientId: this._config.get('AUTH0_CLIENT_ID'),

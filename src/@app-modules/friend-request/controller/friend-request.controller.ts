@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Logger,
@@ -15,6 +16,8 @@ import { FriendRequestService } from '../service/friend-request.service';
 import { Request } from 'src/@core/request.interface';
 import { AddFriendDTO } from '../dto/add-friend.dto';
 import { ResolveFriendRequestDTO } from '../dto/resolve-friend-request.dto';
+import { SelectQueryBuilder } from 'typeorm';
+import { FriendRequest } from '../entities/friend-request.entity';
 
 @Controller('friend-request')
 @UseGuards(AuthGuard('jwt'))
@@ -22,6 +25,23 @@ import { ResolveFriendRequestDTO } from '../dto/resolve-friend-request.dto';
 export class FriendRequestController {
   private readonly _logger = new Logger(FriendRequestController.name);
   constructor(private readonly _friendRequestService: FriendRequestService) {}
+
+  @Get('get-received-friend-requests')
+  async getReceivedFriendRequests(
+    @Req() req,
+  ): Promise<SelectQueryBuilder<FriendRequest>> {
+    try {
+      return await this._friendRequestService.getReceivedFriendRequests(
+        req.user.id,
+      );
+    } catch (error: any) {
+      this._logger.error(error);
+      throw new HttpException(
+        'Error retrieving users',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
   @Post('add-friend')
   public async addFriend(@Req() req: Request, @Body() newFriend: AddFriendDTO) {

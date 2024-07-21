@@ -77,6 +77,20 @@ export class UserController {
     }
   }
 
+  @Get('get-all-users-with-no-pending-requests')
+  @UseGuards(AuthGuard('jwt'))
+  async getAllUsersWithNoPendingRequests(@Req() req: Request): Promise<User[]> {
+    try {
+      return this._userService.getAllUsersWithNoPendingRequests(req.user.id);
+    } catch (error: any) {
+      this._logger.error(error);
+      throw new HttpException(
+        'Error retrieving users',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   @Get('get-user-id/:id')
   @UseGuards(AuthGuard('jwt'))
   async getUserById(@Param('id') id: string): Promise<User> {

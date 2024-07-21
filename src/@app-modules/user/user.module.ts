@@ -8,17 +8,12 @@ import { User } from './entities/user.entity';
 import { UserService } from './services/user.service';
 import { ConfigService } from '@nestjs/config';
 import { Auth0Service } from 'src/@auth/services/auth0.service';
-import { FriendRequest } from '../friend-request/entities/friend-request.entity';
+import { FriendRequestModule } from '../friend-request/friend-request.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      User,
-      Friend,
-      Conversation,
-      Message,
-      FriendRequest,
-    ]),
+    FriendRequestModule,
+    TypeOrmModule.forFeature([User, Friend, Conversation, Message]),
   ],
   controllers: [UserController],
   providers: [UserService, ConfigService, Auth0Service],
