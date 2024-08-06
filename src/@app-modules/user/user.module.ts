@@ -11,12 +11,12 @@ import { Auth0Service } from 'src/@auth/services/auth0.service';
 import { FriendRequestModule } from '../friend-request/friend-request.module';
 
 @Module({
-  imports: [
-    FriendRequestModule,
-    TypeOrmModule.forFeature([User, Friend, Conversation, Message]),
-  ],
-  controllers: [UserController],
-  providers: [UserService, ConfigService, Auth0Service],
-  exports: [UserService],
+    imports: [
+        FriendRequestModule,
+        TypeOrmModule.forFeature([User, Friend, Conversation, Message]),
+    ],
+    controllers: [UserController],
+    providers: [UserService, ConfigService, Auth0Service],
+    exports: [UserService],
 })
-export class UserModule {}
+export class UserModule { }

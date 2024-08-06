@@ -11,12 +11,12 @@ import { Message } from 'src/@app-modules/message/entities/message.entity';
 import { User } from 'src/@app-modules/user/entities/user.entity';
 
 @Module({
-  imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
-    ConfigModule,
-    TypeOrmModule.forFeature([User, Friend, Conversation, Message]),
-  ],
-  providers: [Auth0Service, JwtStrategy, UserService],
-  exports: [Auth0Service, JwtStrategy],
+    imports: [
+        PassportModule.register({ defaultStrategy: 'jwt' }),
+        ConfigModule,
+        TypeOrmModule.forFeature([User, Friend, Conversation, Message]),
+    ],
+    providers: [Auth0Service, JwtStrategy, UserService],
+    exports: [Auth0Service, JwtStrategy],
 })
-export class AuthModule {}
+export class AuthModule { }

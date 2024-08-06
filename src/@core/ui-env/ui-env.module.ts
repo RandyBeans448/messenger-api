@@ -5,7 +5,7 @@ import { UiEnvController } from './ui-env.controller';
 import { UiEnvService } from './ui-env.service';
 
 @Module({
-  controllers: [UiEnvController],
-  providers: [UiEnvService, ConfigService],
+    controllers: [UiEnvController],
+    providers: [UiEnvService, ConfigService],
 })
-export class UiEnvModule {}
+export class UiEnvModule { }

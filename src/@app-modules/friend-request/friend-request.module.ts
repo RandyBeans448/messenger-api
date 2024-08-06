@@ -9,16 +9,20 @@ import { FriendRequest } from './entities/friend-request.entity';
 import { FriendService } from '../friend/services/friend.service';
 import { Friend } from '../friend/entities/friend.entity';
 import { User } from '../user/entities/user.entity';
+import { ConversationModule } from '../conversation/conversation.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([FriendRequest, Friend, User])],
-  controllers: [FriendRequestController],
-  providers: [
-    FriendRequestService,
-    FriendService,
-    ConfigService,
-    UserService,
-    Auth0Service,
-  ],
+    imports: [
+        TypeOrmModule.forFeature([FriendRequest, Friend, User]),
+        ConversationModule,
+    ],
+    controllers: [FriendRequestController],
+    providers: [
+        FriendRequestService,
+        FriendService,
+        ConfigService,
+        UserService,
+        Auth0Service,
+    ],
 })
-export class FriendRequestModule {}
+export class FriendRequestModule { }
