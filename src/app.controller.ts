@@ -4,8 +4,8 @@ import { ApiTags } from '@nestjs/swagger';
 @Controller('')
 @ApiTags('Index')
 export class AppController {
-  @Get('')
-  public index() {
-    return 'alive';
-  }
+    @Get('')
+    public index() {
+        return 'alive';
+    }
 }

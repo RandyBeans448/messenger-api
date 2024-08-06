@@ -9,35 +9,35 @@ import { UserNamespace } from 'src/@app-modules/user/interfaces/user.interface';
 dotenv.config();
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  private readonly _logger = new Logger(JwtStrategy.name);
+    private readonly _logger = new Logger(JwtStrategy.name);
 
-  constructor(private _userService: UserService) {
-    super({
-      secretOrKeyProvider: passportJwtSecret({
-        cache: true,
-        rateLimit: true,
-        jwksRequestsPerMinute: 5,
-        jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`,
-      }),
+    constructor(private _userService: UserService) {
+        super({
+            secretOrKeyProvider: passportJwtSecret({
+                cache: true,
+                rateLimit: true,
+                jwksRequestsPerMinute: 5,
+                jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`,
+            }),
 
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      audience: 'messenger-two',
-      issuer: `https://${process.env.AUTH0_ISS}/`,
-      algorithms: ['RS256'],
-    });
-  }
+            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+            audience: 'messenger-two',
+            issuer: `https://${process.env.AUTH0_ISS}/`,
+            algorithms: ['RS256'],
+        });
+    }
 
-  public async validate(
-    payload: UserNamespace.Auth0PayloadInterface,
-  ): Promise<UserNamespace.ValidatedAuth0UserInterface> {
-    const user: UserNamespace.PreparedDataInterface = await this._userService
-      .getUserByAuthId(payload.sub)
-      .catch((e) => {
-        this._logger.error(`User not found with id ${payload.sub}`);
-        this._logger.error(e.message, e.stack);
-        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-      });
+    public async validate(
+        payload: UserNamespace.Auth0PayloadInterface,
+    ): Promise<UserNamespace.ValidatedAuth0UserInterface> {
+        const user: UserNamespace.PreparedDataInterface = await this._userService
+            .getUserByAuthId(payload.sub)
+            .catch((e) => {
+                this._logger.error(`User not found with id ${payload.sub}`);
+                this._logger.error(e.message, e.stack);
+                throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+            });
 
-    return { token: payload, ...user };
-  }
+        return { token: payload, ...user };
+    }
 }

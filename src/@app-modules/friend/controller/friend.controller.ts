@@ -7,20 +7,20 @@ import { ApiTags } from '@nestjs/swagger';
 @UseGuards(AuthGuard('jwt'))
 @ApiTags('friends')
 export class FriendController {
-  constructor(private readonly _friendService: FriendService) {}
+    constructor(private readonly _friendService: FriendService) { }
 
-  @Get(':id')
-  async getFriendById(@Param('id') id: string) {
-    return this._friendService.getFriendById(id);
-  }
+    @Get(':id')
+    async getFriendById(@Param('id') id: string) {
+        return this._friendService.getFriendById(id);
+    }
 
-  @Get('get-all-friends')
-  async getAllFriends(@Req() req) {
-    return this._friendService.getAllOfUsersFriends(req.user.id);
-  }
+    @Get('get-all-friends')
+    async getAllFriends(@Req() req) {
+        return this._friendService.getAllOfUsersFriends(req.user.id);
+    }
 
-  @Delete(':id')
-  async deleteFriend(@Param('id') id: string) {
-    return this._friendService.deleteFriend(id);
-  }
+    @Delete(':id')
+    async deleteFriend(@Param('id') id: string) {
+        return this._friendService.deleteFriend(id);
+    }
 }

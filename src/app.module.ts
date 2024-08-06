@@ -1,6 +1,6 @@
 // app.module.ts
 
-import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { configValidationSchema } from './config.schema';
 import { ConversationModule } from './@app-modules/conversation/conversation.module';
@@ -17,29 +17,29 @@ import { FriendRequestModule } from './@app-modules/friend-request/friend-reques
 import { ChatGateway } from './chat/chat.gateway';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      envFilePath: [`.env`],
-      validationSchema: configValidationSchema,
-    }),
-    AuthModule,
-    UiEnvModule,
-    DatabaseModule,
-    UserModule,
-    FriendModule,
-    FriendRequestModule,
-    ConversationModule,
-    MessageModule,
-  ],
-  controllers: [AppController],
-  providers: [ChatGateway],
+    imports: [
+        ConfigModule.forRoot({
+            envFilePath: [`.env`],
+            validationSchema: configValidationSchema,
+        }),
+        AuthModule,
+        UiEnvModule,
+        DatabaseModule,
+        UserModule,
+        FriendModule,
+        FriendRequestModule,
+        ConversationModule,
+        MessageModule,
+    ],
+    controllers: [AppController],
+    providers: [Logger, ChatGateway],
 })
 export class AppModule {
-  public configure(consumer: MiddlewareConsumer): void {
-    consumer
-      .apply(RawBodyMiddleware)
-      .forRoutes('*')
-      .apply(JsonBodyMiddleware)
-      .forRoutes('*');
-  }
+    public configure(consumer: MiddlewareConsumer): void {
+        consumer
+            .apply(RawBodyMiddleware)
+            .forRoutes('*')
+            .apply(JsonBodyMiddleware)
+            .forRoutes('*');
+    }
 }
