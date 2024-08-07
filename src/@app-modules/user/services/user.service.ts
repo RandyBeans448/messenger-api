@@ -30,15 +30,16 @@ export class UserService {
                 .createQueryBuilder('user')
                 .leftJoinAndSelect('user.friends', 'friends')
                 .leftJoinAndSelect('friends.friend', 'friend')
+                .leftJoinAndSelect('friends.conversations', 'conversations')
                 .leftJoinAndSelect('user.friendRequests', 'friendRequests')
                 .leftJoinAndSelect('friendRequests.receiver', 'receiver');
 
             const user: User = await userQuery
                 .where('user.auth0Id = :auth0Id', { auth0Id })
-                .getOne();
+                .getOne();   
 
             if (!user) throw new UnauthorizedException();
-
+            
             return user;
         } catch (error: any) {
             this._logger.error(error);

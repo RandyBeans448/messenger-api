@@ -14,7 +14,7 @@ import { User } from 'src/@app-modules/user/entities/user.entity';
     imports: [
         PassportModule.register({ defaultStrategy: 'jwt' }),
         ConfigModule,
-        TypeOrmModule.forFeature([User, Friend, Conversation, Message]),
+        TypeOrmModule.forFeature([User, Friend,]),
     ],
     providers: [Auth0Service, JwtStrategy, UserService],
     exports: [Auth0Service, JwtStrategy],

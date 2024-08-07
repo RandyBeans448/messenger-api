@@ -26,6 +26,7 @@ export class Friend {
 
     @ManyToOne(() => Conversation, (conversation) => conversation.friend, {
         nullable: true,
+        eager: true,
     })
     conversations: Conversation[];
 

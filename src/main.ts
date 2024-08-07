@@ -6,7 +6,7 @@ import { WinstonModule } from 'nest-winston';
 import { loggerConfig } from './@utils/logger/logger.config';
 import { INestApplication, Logger } from '@nestjs/common';
 
-const logger = new Logger('Bootstrap');
+const logger: Logger = new Logger('Bootstrap');
 
 async function bootstrap() {
     const app: INestApplication<any> = await NestFactory.create(AppModule, {
