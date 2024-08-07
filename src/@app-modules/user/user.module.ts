@@ -13,7 +13,7 @@ import { FriendRequestModule } from '../friend-request/friend-request.module';
 @Module({
     imports: [
         FriendRequestModule,
-        TypeOrmModule.forFeature([User, Friend, Conversation, Message]),
+        TypeOrmModule.forFeature([User, Friend,]),
     ],
     controllers: [UserController],
     providers: [UserService, ConfigService, Auth0Service],

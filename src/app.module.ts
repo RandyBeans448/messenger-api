@@ -15,9 +15,13 @@ import { JsonBodyMiddleware } from './@utils/middleware/json-body.middleware';
 import { RawBodyMiddleware } from './@utils/middleware/raw-body.middleware';
 import { FriendRequestModule } from './@app-modules/friend-request/friend-request.module';
 import { ChatGateway } from './chat/chat.gateway';
+import { Conversation } from './@app-modules/conversation/entities/conversation.entity';
+import { Message } from './@app-modules/message/entities/message.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
     imports: [
+        TypeOrmModule.forFeature([Conversation, Message]),
         ConfigModule.forRoot({
             envFilePath: [`.env`],
             validationSchema: configValidationSchema,
