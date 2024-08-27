@@ -32,6 +32,7 @@ export class ConversationService {
                 where: {
                     id,
                 },
+                relations: ['messages'],  
             });
         } catch(error) {
             console.error('Error getting conversation by id:', error);
@@ -66,9 +67,9 @@ export class ConversationService {
         try {
             return await this.conversationRepository.save(conversation);
         } catch(error) {
-
+            console.error('Error updating conversations for user:', error);
             throw new HttpException(
-                'Error getting conversation by id',
+                'Error getting updating conversation',
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
