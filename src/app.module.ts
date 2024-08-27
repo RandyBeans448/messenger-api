@@ -14,14 +14,10 @@ import { AppController } from './app.controller';
 import { JsonBodyMiddleware } from './@utils/middleware/json-body.middleware';
 import { RawBodyMiddleware } from './@utils/middleware/raw-body.middleware';
 import { FriendRequestModule } from './@app-modules/friend-request/friend-request.module';
-import { ChatGateway } from './chat/chat.gateway';
-import { Conversation } from './@app-modules/conversation/entities/conversation.entity';
-import { Message } from './@app-modules/message/entities/message.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SocketModule } from './@socket/socket.module';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Conversation, Message]),
         ConfigModule.forRoot({
             envFilePath: [`.env`],
             validationSchema: configValidationSchema,
@@ -34,9 +30,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         FriendRequestModule,
         ConversationModule,
         MessageModule,
+        SocketModule,
     ],
     controllers: [AppController],
-    providers: [Logger, ChatGateway],
+    providers: [Logger],
 })
 export class AppModule {
     public configure(consumer: MiddlewareConsumer): void {

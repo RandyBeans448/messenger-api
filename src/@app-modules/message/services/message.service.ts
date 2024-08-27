@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Message } from '../entities/message.entity';
+import { Conversation } from 'src/@app-modules/conversation/entities/conversation.entity';
 
 @Injectable()
 export class MessageService {
@@ -9,4 +10,22 @@ export class MessageService {
         @InjectRepository(Message)
         private readonly messageRepository: Repository<Message>,
     ) { }
+
+    public async createMessage(message: string, conversation: Conversation) {
+
+        const newMessage: Message = new Message();
+        newMessage.message = message;
+        newMessage.conversation = conversation;
+    
+        try {
+
+            return await this.messageRepository.save(newMessage);
+        } catch (error: any) {
+            console.error('Error creating conversation:', error);
+            throw new HttpException(
+                'Error creating friendship association',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
 }
