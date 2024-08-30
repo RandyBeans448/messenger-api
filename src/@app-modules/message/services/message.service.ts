@@ -11,12 +11,16 @@ export class MessageService {
         private readonly messageRepository: Repository<Message>,
     ) { }
 
-    public async createMessage(message: string, conversation: Conversation) {
+    public async createMessage(
+        payload: any,
+        conversation: Conversation,
+    ) {
 
         const newMessage: Message = new Message();
-        newMessage.message = message;
+        newMessage.message = payload.message;
         newMessage.conversation = conversation;
-    
+        // newMessage.sender = payload.sender;
+
         try {
 
             return await this.messageRepository.save(newMessage);
