@@ -37,9 +37,11 @@ export class FriendService {
             const newFriend: Friend = new Friend();
             newFriend.user = sender;
             newFriend.friend = receiver;
+            console.log(newFriend);
             return await this._friendRepository.save(newFriend);
         } catch (error) {
             this._logger.error(error);
+            console.log(error); 
             throw new HttpException(error, HttpStatus.BAD_REQUEST);
         }
     }
@@ -163,12 +165,12 @@ export class FriendService {
             console.log(one)
             console.log(two)
 
-            if (one || two) {
-                throw new HttpException(
-                    'Friendship already exists',
-                    HttpStatus.CONFLICT,
-                );
-            }
+            // if (one || two) {
+            //     throw new HttpException(
+            //         'Friendship already exists',
+            //         HttpStatus.CONFLICT,
+            //     );
+            // }
         } catch (error) {
             this._logger.error(error)
             throw new HttpException(

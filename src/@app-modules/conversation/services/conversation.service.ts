@@ -8,7 +8,7 @@ import { Friend } from 'src/@app-modules/friend/entities/friend.entity';
 export class ConversationService {
     constructor(
         @InjectRepository(Conversation)
-        private readonly conversationRepository: Repository<Conversation>,
+        private readonly _conversationRepository: Repository<Conversation>,
     ) { }
 
     public async createConversation(friendsForConversation: Friend[]): Promise<Conversation> {
@@ -16,7 +16,7 @@ export class ConversationService {
         conversation.friend = friendsForConversation;
   
         try {
-            return await this.conversationRepository.save(conversation);
+            return await this._conversationRepository.save(conversation);
         } catch (error) {
             console.error('Error creating conversation:', error);
             throw new HttpException(
@@ -28,7 +28,8 @@ export class ConversationService {
 
     public async getConversationById(id: string): Promise<Conversation> {
         try {
-            return await this.conversationRepository.findOne({
+            
+            return await this._conversationRepository.findOne({
                 where: {
                     id,
                 },
@@ -45,7 +46,7 @@ export class ConversationService {
 
     public async getConversationsForUser(userId: string): Promise<Conversation[]> {
         try {
-            return await this.conversationRepository.find({
+            return await this._conversationRepository.find({
                 where: {
                     friend: {
                         user: {
@@ -65,7 +66,7 @@ export class ConversationService {
 
     public async savedConversation(conversation: Conversation) {
         try {
-            return await this.conversationRepository.save(conversation);
+            return await this._conversationRepository.save(conversation);
         } catch(error) {
             console.error('Error updating conversations for user:', error);
             throw new HttpException(

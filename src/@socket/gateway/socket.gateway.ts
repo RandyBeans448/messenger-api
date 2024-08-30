@@ -42,7 +42,14 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
     public async handleConnection(client: Socket, conversationId: string): Promise<void> {
         this.logger.log(`Client connected: ${client.id}`);
+
         this._conversation = await this._conversationService.getConversationById(conversationId);
+        console.log(this._conversation);
+        if (!this._conversation) {
+
+            this.handleDisconnect(client);
+            throw new HttpException('Conversation not found', HttpStatus.NOT_FOUND);
+        }
     }
 
     public handleDisconnect(client: Socket): void {
@@ -51,7 +58,8 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
     @SubscribeMessage('message')
     public async handleMessage(payload: any): Promise<void> {
+        // console.log('Received message:', payload.message);
         this.io.emit('message', payload);
-        await this._messageService.createMessage(payload.message, this._conversation);
+        // await this._messageService.createMessage(payload.message, this._conversation);
     }
 }

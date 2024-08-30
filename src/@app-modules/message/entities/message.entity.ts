@@ -21,7 +21,7 @@ export class Message {
     @ManyToOne(() => Conversation, (conversation) => conversation.messages)
     conversation: Conversation;
     
-    @ManyToOne(() => User)
+    @ManyToOne(() => User, { eager: true })
     sender: User;
 
     @CreateDateColumn({ type: 'timestamp' })
