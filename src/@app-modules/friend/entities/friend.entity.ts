@@ -20,7 +20,7 @@ export class Friend {
     @ManyToOne(() => User, (user) => user.friends)
     user: User;
 
-    @OneToOne(() => User, { eager: true })
+    @ManyToOne(() => User, { eager: true })
     @JoinColumn()
     friend: User;
 
