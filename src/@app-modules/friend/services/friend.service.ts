@@ -26,26 +26,6 @@ export class FriendService {
         private _userService: UserService,
     ) { }
 
-    public async createNewFriend(
-        sender: User,
-        receiver: User,
-    ): Promise<Friend> {
-        try {
-
-            await this._checkToSeeIfFriendShipExists(sender, receiver);
-
-            const newFriend: Friend = new Friend();
-            newFriend.user = sender;
-            newFriend.friend = receiver;
-            console.log(newFriend);
-            return await this._friendRepository.save(newFriend);
-        } catch (error) {
-            this._logger.error(error);
-            console.log(error); 
-            throw new HttpException(error, HttpStatus.BAD_REQUEST);
-        }
-    }
-
     public async addFriend(acceptedFriendRequest: FriendRequest) {
         try {
             const sender: User = await this._userService.getUserById(acceptedFriendRequest.requestSentBy.id, []);
@@ -67,34 +47,6 @@ export class FriendService {
             );
         }
     }
-
-
-    // public async resolveFriendRequest(
-    //   userId: string,
-    //   resolveFriendRequestDto: ResolveFriendRequestDTO,
-    // ) {
-    //   try {
-    //     const friendRequest: Friend = await this._friendRepository.findOne({
-    //       where: {
-    //         id: resolveFriendRequestDto.id,
-    //       },
-    //     });
-
-    //     // friendRequest.pending = false;
-    //     // friendRequest.accepted = resolveFriendRequestDto.accepted;
-
-    //     // if (friendRequest.accepted) {
-    //     //   await this.addFriend(user, { id: friendRequest.friend.id });
-    //     // } else {
-    //     //   await this.deleteFriend(friendRequest.id);
-    //     // }
-    //   } catch (error: any) {
-    //     throw new HttpException(
-    //       'Error resolving this friendship request',
-    //       HttpStatus.INTERNAL_SERVER_ERROR,
-    //     );
-    //   }
-    // }
 
     public async getFriendById(id: string): Promise<Friend> {
         const friend: Friend = await this._friendRepository.findOne({
@@ -151,26 +103,20 @@ export class FriendService {
     private async _checkToSeeIfFriendShipExists(
         sender: User,
         receiver: User,
-    ) {
+    ): Promise<boolean> {
         try {
 
-            const one = await this._findFriendship(sender, receiver);
-            const two = await this._findFriendship(receiver, sender);
-            
-            // const existingFriends: Friend[] = [
-            //    await this._findFriendship(sender, receiver),
-            //    await this._findFriendship(receiver, sender),
-            // ];
+            const existingFriends: Friend[] = [
+               await this._findFriendship(sender, receiver),
+               await this._findFriendship(receiver, sender),
+            ];
 
-            console.log(one)
-            console.log(two)
+            if (existingFriends[0] === null || existingFriends[1] === null) {
+                return false;
+            } else {
+                return true;
+            }
 
-            // if (one || two) {
-            //     throw new HttpException(
-            //         'Friendship already exists',
-            //         HttpStatus.CONFLICT,
-            //     );
-            // }
         } catch (error) {
             this._logger.error(error)
             throw new HttpException(
@@ -184,8 +130,6 @@ export class FriendService {
         sender: User,
         receiver: User,
     ) {
-        console.log(sender)
-        console.log(receiver)
         try {
             return await this._friendRepository.findOne({
                 where: [
@@ -205,7 +149,8 @@ export class FriendService {
 
     private async _createAndGetFriend(sender: User, receiver: User): Promise<Friend> {
         try {
-            const createNewFriend: Friend = await this.createNewFriend(sender, receiver);
+            const createNewFriend: Friend = await this._createNewFriend(sender, receiver);
+            console.log('createNewFriend --------------->', createNewFriend)
             const friend: Friend = await this.getFriendById(createNewFriend.id);
             return friend;
         } catch (error: any) {
@@ -213,6 +158,33 @@ export class FriendService {
                 'Error creating friendship association',
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
+        }
+    }
+
+    private async _createNewFriend(
+        sender: User,
+        receiver: User,
+    ): Promise<Friend> {
+        try {
+
+            const doesFriendshipExist: boolean = await this._checkToSeeIfFriendShipExists(sender, receiver);
+
+            if (doesFriendshipExist) {
+                throw new HttpException('Friendship already exists', HttpStatus.BAD_REQUEST);
+            }
+
+            const newFriend: Friend = new Friend();
+
+            newFriend.user = sender;
+            newFriend.friend = receiver;
+
+            console.log(newFriend);
+
+            return await this._friendRepository.save(newFriend);
+        } catch (error) {
+            this._logger.error(error);
+            console.log(error); 
+            throw new HttpException(error, HttpStatus.BAD_REQUEST);
         }
     }
 }

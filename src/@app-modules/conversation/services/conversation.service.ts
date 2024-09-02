@@ -33,7 +33,7 @@ export class ConversationService {
                 where: {
                     id,
                 },
-                relations: ['messages'],  
+                relations: ['friend', 'messages'],  
             });
         } catch(error) {
             console.error('Error getting conversation by id:', error);

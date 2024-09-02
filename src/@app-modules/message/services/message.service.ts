@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Message } from '../entities/message.entity';
 import { Conversation } from 'src/@app-modules/conversation/entities/conversation.entity';
+import { MessageNamespace } from '../interfaces/message.interface';
 
 @Injectable()
 export class MessageService {
@@ -12,22 +13,21 @@ export class MessageService {
     ) { }
 
     public async createMessage(
-        payload: any,
-        conversation: Conversation,
+        payload: MessageNamespace.NewMessageInterface,
     ) {
 
         const newMessage: Message = new Message();
         newMessage.message = payload.message;
-        newMessage.conversation = conversation;
-        // newMessage.sender = payload.sender;
+        newMessage.conversation = payload.conversation;
+        newMessage.sender = payload.sender;
 
         try {
 
             return await this.messageRepository.save(newMessage);
         } catch (error: any) {
-            console.error('Error creating conversation:', error);
+            console.error('Error creating message:', error);
             throw new HttpException(
-                'Error creating friendship association',
+                'Error creating message',
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }

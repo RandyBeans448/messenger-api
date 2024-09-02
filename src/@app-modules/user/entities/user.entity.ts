@@ -12,7 +12,7 @@ import { FriendRequest } from '../../friend-request/entities/friend-request.enti
 
 @Entity('users')
 export class User {
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryGeneratedColumn('uuid',)
     id: string;
 
     @Column({ unique: true })
