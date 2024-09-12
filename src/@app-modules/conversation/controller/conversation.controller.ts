@@ -17,6 +17,7 @@ export class ConversationController {
 
     @Get(':id')
     async getConversationById(@Param('id') id: string): Promise<Conversation> {
+        console.log('getConversationById called with id:', id);
         try {
             return this._conversationService.getConversationById(id);
         } catch (error) {

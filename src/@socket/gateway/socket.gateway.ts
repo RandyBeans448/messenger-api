@@ -78,6 +78,6 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
             newMessage,
         );
 
-        this.io.emit('message', payload.message);
+        this.io.emit('message', payload);
     }
 }

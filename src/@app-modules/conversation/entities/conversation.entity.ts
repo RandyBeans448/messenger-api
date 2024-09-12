@@ -19,7 +19,7 @@ export class Conversation {
     @OneToMany(() => Friend, (friend) => friend.conversations)
     friend: Friend[];
 
-    @OneToMany(() => Message, (message) => message.conversation)
+    @OneToMany(() => Message, (message) => message.conversation, { eager: true, })
     messages: Message[];
 
     @CreateDateColumn({ type: 'timestamp' })
