@@ -27,13 +27,16 @@ export class ConversationService {
     }
 
     public async getConversationById(id: string): Promise<Conversation> {
+        console.log('getConversationById called with id:', id);
         try {
-            
             return await this._conversationRepository.findOne({
                 where: {
                     id,
+                    messages: {
+                        
+                    }
                 },
-                relations: ['friend', 'messages'],  
+                relations: ['friend', 'messages'],
             });
         } catch(error) {
             console.error('Error getting conversation by id:', error);
