@@ -96,6 +96,9 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         console.log(`Public key received from ${client.id}: ${payload.publicKey}`);
         this.publicKeys[client.id] = payload.publicKey;
         console.log('publicKeys ----------->', this.publicKeys, '<----------- publicKeys');
-        this.io.emit('receive_public_key', { publicKey: payload.publicKey });
+        this.io.emit('receive_public_key', {
+            socketId: client.id,
+            publicKey: payload.publicKey,
+         });
     }
 }
