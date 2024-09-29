@@ -13,6 +13,8 @@ import { FriendRequest } from 'src/@app-modules/friend-request/entities/friend-r
 import { Conversation } from 'src/@app-modules/conversation/entities/conversation.entity';
 import { ConversationService } from 'src/@app-modules/conversation/services/conversation.service';
 import { User } from 'src/@app-modules/user/entities/user.entity';
+import { CryptoKeyService } from 'src/@app-modules/crypto-key/services/crypto-key.services';
+import { CryptoKeys } from 'src/@app-modules/crypto-key/entities/crypto-key.entity';
 
 @Injectable()
 export class FriendService {
@@ -22,8 +24,9 @@ export class FriendService {
     constructor(
         @InjectRepository(Friend)
         private _friendRepository: Repository<Friend>,
-        private _conversationService: ConversationService,
         private _userService: UserService,
+        private _conversationService: ConversationService,
+        private readonly _cryptoKeyService: CryptoKeyService,
     ) { }
 
     public async addFriend(acceptedFriendRequest: FriendRequest) {
@@ -35,10 +38,10 @@ export class FriendService {
             const newFriendForReceiver: Friend = await this._createAndGetFriend(receiver, sender);
 
             const newConversation: Conversation = await this._conversationService.createConversation([newFriendForSender, newFriendForReceiver]);
-
             await this._friendRepository.save(newFriendForSender);
             await this._friendRepository.save(newFriendForReceiver);
             await this._conversationService.savedConversation(newConversation);
+            await this._createCryptoKeys(newConversation);
         } catch (error: any) {
             await this._logger.error(error);
             throw new HttpException(
@@ -84,6 +87,24 @@ export class FriendService {
             console.log(error);
             throw new HttpException(
                 'Error getting friends list',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    public async updateFriend(id: string, friend: Friend): Promise<Friend> {
+        try {
+            const updatedFriend: Friend = await this._friendRepository.preload({
+                id,
+                ...friend,
+            });
+            if (!updatedFriend) {
+                throw new NotFoundException('Friend not found');
+            }
+            return await this._friendRepository.save(updatedFriend);
+        } catch (error: any) {
+            throw new HttpException(
+                'Error updating friend',
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -147,10 +168,12 @@ export class FriendService {
         }
     }
 
-    private async _createAndGetFriend(sender: User, receiver: User): Promise<Friend> {
+    private async _createAndGetFriend(
+        sender: User,
+        receiver: User,
+    ): Promise<Friend> {
         try {
             const createNewFriend: Friend = await this._createNewFriend(sender, receiver);
-            console.log('createNewFriend --------------->', createNewFriend)
             const friend: Friend = await this.getFriendById(createNewFriend.id);
             return friend;
         } catch (error: any) {
@@ -178,9 +201,31 @@ export class FriendService {
             newFriend.user = sender;
             newFriend.friend = receiver;
 
-            console.log(newFriend);
-
             return await this._friendRepository.save(newFriend);
+        } catch (error) {
+            this._logger.error(error);
+            console.log(error); 
+            throw new HttpException(error, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    private async _createCryptoKeys(
+        conversation: Conversation,
+    ) {
+        try {
+            const keys: [CryptoKeys, CryptoKeys] = await this._cryptoKeyService.createCryptoKeys(conversation);
+
+            const friendOne: Friend = conversation.friend[0];
+            const friendTwo: Friend = conversation.friend[1];
+
+            friendOne.cryptoKey = keys[0];
+            friendTwo.cryptoKey = keys[1];
+
+            return await Promise.all([
+                await this.updateFriend(conversation.friend[0].id, friendOne),
+                await this.updateFriend(conversation.friend[1].id, friendTwo),
+            ]);
+
         } catch (error) {
             this._logger.error(error);
             console.log(error); 

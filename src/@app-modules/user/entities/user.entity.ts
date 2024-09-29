@@ -21,18 +21,10 @@ export class User {
     @Column()
     username: string;
 
-    @OneToMany(() => Friend, (friend) => friend.user, {
-        nullable: true,
-    })
+    @OneToMany(() => Friend, (friend) => friend.user, { nullable: true })
     friends: Friend[];
 
-    @OneToMany(
-        () => FriendRequest,
-        (friendRequests) => friendRequests.requestSentBy,
-        {
-            nullable: true,
-        },
-    )
+    @OneToMany(() => FriendRequest, (friendRequests) => friendRequests.requestSentBy, { nullable: true })
     friendRequests: FriendRequest[];
 
     @Column({ unique: true })

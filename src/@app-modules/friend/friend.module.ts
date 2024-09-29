@@ -3,22 +3,25 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { FriendController } from './controller/friend.controller';
 import { Friend } from './entities/friend.entity';
 import { FriendService } from './services/friend.service';
-import { UserService } from '../user/services/user.service';
-import { Auth0Service } from 'src/@auth/services/auth0.service';
-import { ConfigService } from '@nestjs/config';
-import { ConversationService } from '../conversation/services/conversation.service';
-import { Conversation } from '../conversation/entities/conversation.entity';
-import { User } from '../user/entities/user.entity';
+import { UserModule } from '../user/user.module';
+import { ConversationModule } from '../conversation/conversation.module';
+import { CryptoKeyModule } from '../crypto-key/crypto-key.module';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Friend, Conversation, User])],
+    imports: [
+        TypeOrmModule.forFeature([
+            Friend,
+        ]),
+        ConversationModule,
+        UserModule,
+        CryptoKeyModule,
+    ],
     controllers: [FriendController],
     providers: [
-        ConversationService,
         FriendService,
-        ConfigService,
-        UserService,
-        Auth0Service,
     ],
+    exports: [
+        FriendService,
+    ]
 })
 export class FriendModule { }

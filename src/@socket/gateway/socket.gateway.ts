@@ -1,8 +1,5 @@
-import { HttpException, HttpStatus, Logger, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { InjectRepository } from '@nestjs/typeorm';
+import { HttpException, HttpStatus, Logger } from '@nestjs/common';
 import {
-    ConnectedSocket,
     MessageBody,
     OnGatewayConnection,
     OnGatewayDisconnect,
@@ -83,22 +80,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         await this._messageService.createMessage(
             newMessage,
         );
-        console.log(payload)
-        this.io.emit('message', payload);
-    }
 
-    // Handle public key exchange
-    @SubscribeMessage('send_public_key')
-    public handlePublicKey(
-        client: Socket,
-        payload: { publicKey: string },
-    ): void {
-        console.log(`Public key received from ${client.id}: ${payload.publicKey}`);
-        this.publicKeys[client.id] = payload.publicKey;
-        console.log('publicKeys ----------->', this.publicKeys, '<----------- publicKeys');
-        this.io.emit('receive_public_key', {
-            socketId: client.id,
-            publicKey: payload.publicKey,
-         });
+        this.io.emit('message', payload);
     }
 }
