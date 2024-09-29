@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm'; // You need to create this DTO
 import { Conversation } from '../entities/conversation.entity';
 import { Friend } from 'src/@app-modules/friend/entities/friend.entity';
+import { CryptoKeyService } from 'src/@app-modules/crypto-key/services/crypto-key.services';
+import { CryptoKeys } from 'src/@app-modules/crypto-key/entities/crypto-key.entity';
 
 @Injectable()
 export class ConversationService {
@@ -16,7 +18,8 @@ export class ConversationService {
         conversation.friend = friendsForConversation;
   
         try {
-            return await this._conversationRepository.save(conversation);
+            const savedConversation: Conversation = await this._conversationRepository.save(conversation);
+            return savedConversation;
         } catch (error) {
             console.error('Error creating conversation:', error);
             throw new HttpException(
@@ -27,14 +30,10 @@ export class ConversationService {
     }
 
     public async getConversationById(id: string): Promise<Conversation> {
-        console.log('getConversationById called with id:', id);
         try {
             return await this._conversationRepository.findOne({
                 where: {
                     id,
-                    messages: {
-                        
-                    }
                 },
                 relations: ['friend', 'messages'],
             });

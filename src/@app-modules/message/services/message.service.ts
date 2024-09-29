@@ -2,7 +2,6 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Message } from '../entities/message.entity';
-import { Conversation } from 'src/@app-modules/conversation/entities/conversation.entity';
 import { MessageNamespace } from '../interfaces/message.interface';
 
 @Injectable()

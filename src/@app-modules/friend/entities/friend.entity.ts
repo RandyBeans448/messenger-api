@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity'; // Assuming you have a User entity
 import { Conversation } from '../../conversation/entities/conversation.entity'; // Assuming you have a Conversation entity
+import { CryptoKeys } from '../../crypto-key/entities/crypto-key.entity';
 
 @Entity('friends')
 export class Friend {
@@ -21,13 +22,13 @@ export class Friend {
     user: User;
 
     @ManyToOne(() => User, { eager: true })
-    @JoinColumn()
     friend: User;
 
-    @ManyToOne(() => Conversation, (conversation) => conversation.friend, {
-        nullable: true,
-        eager: true,
-    })
+    @OneToOne(() => CryptoKeys, (cryptoKey) => cryptoKey.friend)
+    @JoinColumn()
+    cryptoKey: CryptoKeys;
+
+    @ManyToOne(() => Conversation, (conversation) => conversation.friend, { nullable: true, eager: true })
     conversations: Conversation[];
 
     @CreateDateColumn({ type: 'timestamp' })
