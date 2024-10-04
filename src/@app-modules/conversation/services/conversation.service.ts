@@ -35,7 +35,11 @@ export class ConversationService {
                 where: {
                     id,
                 },
-                relations: ['friend', 'messages'],
+                relations: [
+                    'friend', 
+                    'friend.cryptoKey', 
+                    'messages',
+                ],
             });
         } catch(error) {
             console.error('Error getting conversation by id:', error);
@@ -66,7 +70,7 @@ export class ConversationService {
         }
     }
 
-    public async savedConversation(conversation: Conversation) {
+    public async savedConversation(conversation: Conversation): Promise<Conversation> {
         try {
             return await this._conversationRepository.save(conversation);
         } catch(error) {

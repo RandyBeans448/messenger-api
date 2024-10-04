@@ -38,9 +38,16 @@ export class FriendService {
             const newFriendForReceiver: Friend = await this._createAndGetFriend(receiver, sender);
 
             const newConversation: Conversation = await this._conversationService.createConversation([newFriendForSender, newFriendForReceiver]);
+            await this._conversationService.savedConversation(newConversation);
+
+            newFriendForSender.conversations = [newConversation];
+            newFriendForReceiver.conversations = [newConversation];
+            
             await this._friendRepository.save(newFriendForSender);
             await this._friendRepository.save(newFriendForReceiver);
-            await this._conversationService.savedConversation(newConversation);
+
+            console.log('new conversation ---->', newConversation, '<---- new conversation')
+            
             await this._createCryptoKeys(newConversation);
         } catch (error: any) {
             await this._logger.error(error);
@@ -92,16 +99,12 @@ export class FriendService {
         }
     }
 
-    public async updateFriend(id: string, friend: Friend): Promise<Friend> {
+    public async updateFriend(friend: Friend): Promise<Friend> {
         try {
-            const updatedFriend: Friend = await this._friendRepository.preload({
-                id,
-                ...friend,
-            });
-            if (!updatedFriend) {
+            if (!friend) {
                 throw new NotFoundException('Friend not found');
             }
-            return await this._friendRepository.save(updatedFriend);
+            return await this._friendRepository.save(friend);
         } catch (error: any) {
             throw new HttpException(
                 'Error updating friend',
@@ -213,7 +216,7 @@ export class FriendService {
         conversation: Conversation,
     ) {
         try {
-            const keys: [CryptoKeys, CryptoKeys] = await this._cryptoKeyService.createCryptoKeys(conversation);
+            const keys: CryptoKeys[] = await this._cryptoKeyService.createCryptoKeys(conversation);
 
             const friendOne: Friend = conversation.friend[0];
             const friendTwo: Friend = conversation.friend[1];
@@ -222,8 +225,8 @@ export class FriendService {
             friendTwo.cryptoKey = keys[1];
 
             return await Promise.all([
-                await this.updateFriend(conversation.friend[0].id, friendOne),
-                await this.updateFriend(conversation.friend[1].id, friendTwo),
+                await this.updateFriend(friendOne),
+                await this.updateFriend(friendTwo),
             ]);
 
         } catch (error) {

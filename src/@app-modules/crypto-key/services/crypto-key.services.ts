@@ -4,8 +4,6 @@ import { DeleteResult, Repository } from 'typeorm';
 import { CryptoKeys } from '../entities/crypto-key.entity';
 import * as crypto from 'crypto';
 import { Conversation } from 'src/@app-modules/conversation/entities/conversation.entity';
-import { FriendService } from 'src/@app-modules/friend/services/friend.service';
-import { Friend } from 'src/@app-modules/friend/entities/friend.entity';
 
 @Injectable()
 export class CryptoKeyService {
@@ -65,7 +63,6 @@ export class CryptoKeyService {
     }
 
     public async createCryptoKeys(conversation: Conversation){
-        console.log('creating keys')
         const cryptoKeyUserOne: CryptoKeys = new CryptoKeys();
         cryptoKeyUserOne.friend = conversation.friend[0];
 
