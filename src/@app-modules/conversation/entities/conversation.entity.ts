@@ -5,12 +5,10 @@ import {
     UpdateDateColumn,
     DeleteDateColumn,
     OneToMany,
-    ManyToMany,
-    JoinTable,
 } from 'typeorm';
 import { Friend } from '../../friend/entities/friend.entity';
 import { Message } from '../../message/entities/message.entity';
-import { CryptoKeys } from '../../crypto-key/entities/crypto-key.entity';
+
 
 @Entity('conversations')
 export class Conversation {

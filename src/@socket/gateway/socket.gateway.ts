@@ -14,7 +14,6 @@ import { ConversationService } from 'src/@app-modules/conversation/services/conv
 import { MessageNamespace } from 'src/@app-modules/message/interfaces/message.interface';
 import { MessageService } from 'src/@app-modules/message/services/message.service';
 
-// @UseGuards(AuthGuard('jwt'))
 @WebSocketGateway({
     namespace: 'chatroom',
     cors: {
@@ -44,6 +43,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     @SubscribeMessage('join')
     public async handleConnection(
         client: Socket,
+        userId: string,
         conversationId: string,
     ): Promise<void> {
         this.logger.log(`Client connected: ${client.id}`);
@@ -55,6 +55,16 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
             this.handleDisconnect(client);
             throw new HttpException('Conversation not found', HttpStatus.NOT_FOUND);
         }
+        
+        let userKey;
+
+        if (this._conversation.friend[0].id === userId) {
+            userKey = this._conversation.friend[0].cryptoKey.sharedSecret;
+        } else {
+            userKey = this._conversation.friend[1].cryptoKey.sharedSecret;
+        }
+
+        this.io.emit('join', userKey);
     }
 
     public handleDisconnect(

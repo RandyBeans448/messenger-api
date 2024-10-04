@@ -28,7 +28,7 @@ export class Friend {
     @JoinColumn()
     cryptoKey: CryptoKeys;
 
-    @ManyToOne(() => Conversation, (conversation) => conversation.friend, { nullable: true, eager: true })
+    @ManyToOne(() => Conversation, (conversation) => conversation.friend, { nullable: false, eager: true })
     conversations: Conversation[];
 
     @CreateDateColumn({ type: 'timestamp' })
