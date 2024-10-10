@@ -6,14 +6,15 @@ export namespace MessageNamespace {
     export interface MessageInterface {
         message: string;
         senderId: string;
+        conversation: Conversation;
         createdAt: string;
         updatedAt: string;
     }
 
     export interface NewMessageInterface {
         message: string;
-        conversation: Conversation;
         sender: User;
+        conversation: Conversation;
         createdAt: string;
         updatedAt: string;
     }
