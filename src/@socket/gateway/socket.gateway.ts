@@ -43,34 +43,12 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     @SubscribeMessage('join')
     public async handleConnection(
         client: Socket,
-        userId: string,
-        conversationId: string,
     ): Promise<void> {
         this.logger.log(`Client connected: ${client.id}`);
-
-        this._conversation = await this._conversationService.getConversationById(conversationId);
-        this._conversationFriendIds = this._conversation.friend.map((friend) => friend.friend);
-
-        if (!this._conversation) {
-            this.handleDisconnect(client);
-            throw new HttpException('Conversation not found', HttpStatus.NOT_FOUND);
-        }
-        
-        let userKey;
-
-        if (this._conversation.friend[0].id === userId) {
-            userKey = this._conversation.friend[0].cryptoKey.sharedSecret;
-        } else {
-            userKey = this._conversation.friend[1].cryptoKey.sharedSecret;
-        }
-
-        this.io.emit('join', userKey);
+        this.io.emit('join');
     }
 
-    public handleDisconnect(
-        client: Socket,
-    ): void {
-        delete this.publicKeys[client.id];
+    public handleDisconnect(client: Socket): void {
         this.logger.log(`Client disconnected: ${client.id}`);
     }
 
@@ -81,8 +59,8 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
         const newMessage: MessageNamespace.NewMessageInterface = {
             message: payload.message,
-            conversation: this._conversation,
-            sender: payload.senderId === this._conversationFriendIds[0].id ? this._conversationFriendIds[0] : this._conversationFriendIds[1],
+            conversation: payload.conversation,
+            sender: payload.senderId === payload.conversation.friend[0].id ? payload.conversation.friend[0].user : payload.conversation.friend[1].user,
             createdAt: payload.createdAt,
             updatedAt: payload.updatedAt,
         };
@@ -92,5 +70,16 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         );
 
         this.io.emit('message', payload);
+    }
+
+    @SubscribeMessage('disconnectClient')
+    disconnectClient(@MessageBody() clientId: string): void {
+    //   const clientSocket = this.io.sockets.sockets.get(clientId);
+    //   if (clientSocket) {
+        // clientSocket.disconnect();
+        this._conversation = null;
+        this._conversationFriendIds = null;
+        console.log(`Client ${clientId} has been disconnected`);
+    //   }
     }
 }

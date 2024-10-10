@@ -15,6 +15,8 @@ export class MessageService {
         payload: MessageNamespace.NewMessageInterface,
     ) {
 
+        console.log('Payload:', payload);
+
         const newMessage: Message = new Message();
         newMessage.message = payload.message;
         newMessage.conversation = payload.conversation;
