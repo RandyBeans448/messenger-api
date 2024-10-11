@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import {
     MessageBody,
     OnGatewayConnection,
@@ -9,10 +9,10 @@ import {
     WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Conversation } from 'src/@app-modules/conversation/entities/conversation.entity';
-import { ConversationService } from 'src/@app-modules/conversation/services/conversation.service';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { MessageNamespace } from 'src/@app-modules/message/interfaces/message.interface';
 import { MessageService } from 'src/@app-modules/message/services/message.service';
+import { User } from 'src/@app-modules/user/entities/user.entity';
 
 @WebSocketGateway({
     namespace: 'chatroom',
@@ -25,61 +25,79 @@ import { MessageService } from 'src/@app-modules/message/services/message.servic
 export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     private readonly logger = new Logger(SocketGateway.name);
 
-    private _conversation: Conversation;
-    private _conversationFriendIds: any[];
-    private publicKeys: { [socketId: string]: string } = {};
-
     constructor(
-        private _conversationService: ConversationService,
-        private _messageService: MessageService,
-    ) { }
+        private readonly messageService: MessageService,
+    ) {}
 
-    @WebSocketServer() io: Server;
+    @WebSocketServer() private readonly io: Server;
 
+    /**
+     * Lifecycle hook: Called after WebSocket server initialization
+     */
     public afterInit(server: Server): void {
-        this.logger.log('Initialized');
+        this.logger.log('WebSocket server initialized');
     }
 
-    @SubscribeMessage('join')
-    public async handleConnection(
-        client: Socket,
-    ): Promise<void> {
+    /**
+     * Lifecycle hook: Called when a client connects
+     * @param client - The connected client socket
+     */
+    public handleConnection(client: Socket): void {
         this.logger.log(`Client connected: ${client.id}`);
-        this.io.emit('join');
+        this.io.emit('join', { clientId: client.id });
     }
 
+    /**
+     * Lifecycle hook: Called when a client disconnects
+     * @param client - The disconnected client socket
+     */
     public handleDisconnect(client: Socket): void {
         this.logger.log(`Client disconnected: ${client.id}`);
+        this.io.emit('leave', { clientId: client.id });
     }
 
+    /**
+     * Handles incoming chat messages
+     * @param payload - The message payload containing conversation details
+     */
     @SubscribeMessage('message')
     public async handleMessage(
         @MessageBody() payload: MessageNamespace.MessageInterface,
     ): Promise<void> {
+        try {
+            const { message, conversation, senderId, createdAt, updatedAt } = payload;
 
-        const newMessage: MessageNamespace.NewMessageInterface = {
-            message: payload.message,
-            conversation: payload.conversation,
-            sender: payload.senderId === payload.conversation.friend[0].id ? payload.conversation.friend[0].user : payload.conversation.friend[1].user,
-            createdAt: payload.createdAt,
-            updatedAt: payload.updatedAt,
-        };
+            const sender: User = senderId === conversation.friend[0].id
+                ? conversation.friend[0].user
+                : conversation.friend[1].user;
 
-        await this._messageService.createMessage(
-            newMessage,
-        );
+            const newMessage: MessageNamespace.NewMessageInterface = {
+                message,
+                conversation,
+                sender,
+                createdAt,
+                updatedAt,
+            };
 
-        this.io.emit('message', payload);
+            await this.messageService.createMessage(newMessage);
+            this.io.emit('message', payload);
+        } catch (error) {
+            this.logger.error('Error handling message', error);
+        }
     }
 
+    /**
+     * Manually disconnect a client by ID
+     * @param clientId - The ID of the client to disconnect
+     */
     @SubscribeMessage('disconnectClient')
-    disconnectClient(@MessageBody() clientId: string): void {
-    //   const clientSocket = this.io.sockets.sockets.get(clientId);
-    //   if (clientSocket) {
-        // clientSocket.disconnect();
-        this._conversation = null;
-        this._conversationFriendIds = null;
-        console.log(`Client ${clientId} has been disconnected`);
-    //   }
+    public disconnectClient(@MessageBody() clientId: string): void {
+        const client: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> = this.io.sockets.sockets.get(clientId);
+        if (client) {
+            client.disconnect(true);
+            this.logger.log(`Client ${clientId} has been manually disconnected`);
+        } else {
+            this.logger.warn(`Client ${clientId} not found`);
+        }
     }
 }
