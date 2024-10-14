@@ -96,16 +96,17 @@ export class UserService {
             user = await this._userRepository.save(userData).catch((error) => {
                 throw error;
             });
+
+            return {
+                id: user.id,
+                email: user.email,
+                username: user.username,
+            };
+
         } catch (error: any) {
             this._logger.error(error);
             throw error;
         }
-
-        return {
-            id: user.id,
-            email: user.email,
-            username: user.username,
-        };
     }
 
     public getAllUsers(): Promise<User[]> {
@@ -141,24 +142,26 @@ export class UserService {
             return test;
         } catch (error: any) {
             this._logger.error(error);
-            throw error;
+            throw new HttpException('', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public async getUserById(id: string, relations: string[]): Promise<User> {
+    public async getUserById(
+        id: string,
+        relations: string[],
+    ): Promise<User> {
         try {
             return await this._userRepository.findOne({
                 where: { id: id },
                 relations: relations,
             });
         } catch (error: any) {
-            console.log(error);
             this._logger.error(error);
-            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+            throw new HttpException('', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public async getOtherUsers(userId: string) {
+    public async getOtherUsers(userId: string): Promise<User[]> {
         try {
             return await this._userRepository.find({
                 where: {
@@ -167,7 +170,7 @@ export class UserService {
             });
         } catch (error: any) {
             this._logger.error(error);
-            throw error;
+            throw new HttpException('', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -205,7 +208,7 @@ export class UserService {
             return success;
         } catch (error: any) {
             this._logger.error(error);
-            throw error;
+            throw new HttpException('', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

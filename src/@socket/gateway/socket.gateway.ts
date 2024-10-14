@@ -23,7 +23,7 @@ import { User } from 'src/@app-modules/user/entities/user.entity';
     },
 })
 export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-    private readonly logger = new Logger(SocketGateway.name);
+    private readonly _logger = new Logger(SocketGateway.name);
 
     constructor(
         private readonly messageService: MessageService,
@@ -35,7 +35,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
      * Lifecycle hook: Called after WebSocket server initialization
      */
     public afterInit(server: Server): void {
-        this.logger.log('WebSocket server initialized');
+        this._logger.log('WebSocket server initialized');
     }
 
     /**
@@ -43,7 +43,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
      * @param client - The connected client socket
      */
     public handleConnection(client: Socket): void {
-        this.logger.log(`Client connected: ${client.id}`);
+        this._logger.log(`Client connected: ${client.id}`);
         this.io.emit('join', { clientId: client.id });
     }
 
@@ -52,7 +52,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
      * @param client - The disconnected client socket
      */
     public handleDisconnect(client: Socket): void {
-        this.logger.log(`Client disconnected: ${client.id}`);
+        this._logger.log(`Client disconnected: ${client.id}`);
         this.io.emit('leave', { clientId: client.id });
     }
 
@@ -65,24 +65,22 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         @MessageBody() payload: MessageNamespace.MessageInterface,
     ): Promise<void> {
         try {
-            const { message, conversation, senderId, createdAt, updatedAt } = payload;
+            const { message, conversation, sender, createdAt, updatedAt } = payload; 
 
-            const sender: User = senderId === conversation.friend[0].id
-                ? conversation.friend[0].user
-                : conversation.friend[1].user;
+            const setSender: User = sender.id === conversation.friend[0].user.id ? conversation.friend[0].user : conversation.friend[1].user;  
 
             const newMessage: MessageNamespace.NewMessageInterface = {
-                message,
-                conversation,
-                sender,
-                createdAt,
-                updatedAt,
+                message: message,
+                conversation: conversation,
+                sender: setSender,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
             };
 
             await this.messageService.createMessage(newMessage);
             this.io.emit('message', payload);
         } catch (error) {
-            this.logger.error('Error handling message', error);
+            this._logger.error('Error handling message', error);
         }
     }
 
@@ -95,9 +93,9 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         const client: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> = this.io.sockets.sockets.get(clientId);
         if (client) {
             client.disconnect(true);
-            this.logger.log(`Client ${clientId} has been manually disconnected`);
+            this._logger.log(`Client ${clientId} has been manually disconnected`);
         } else {
-            this.logger.warn(`Client ${clientId} not found`);
+            this._logger.warn(`Client ${clientId} not found`);
         }
     }
 }

@@ -42,39 +42,42 @@ export class FriendService {
 
             newFriendForSender.conversations = [newConversation];
             newFriendForReceiver.conversations = [newConversation];
-            
+
             await this._friendRepository.save(newFriendForSender);
             await this._friendRepository.save(newFriendForReceiver);
 
-            console.log('new conversation ---->', newConversation, '<---- new conversation')
-            
             await this._createCryptoKeys(newConversation);
         } catch (error: any) {
             await this._logger.error(error);
             throw new HttpException(
-                'Error creating friendship association',
+                error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
     }
 
     public async getFriendById(id: string): Promise<Friend> {
-        const friend: Friend = await this._friendRepository.findOne({
-            where: { id },
-            relations: ['user', 'friend', 'conversations'],
-        });
-        if (!friend) {
-            throw new NotFoundException('Friend not found');
+        try {
+            return await this._friendRepository.findOne({
+                where: { id },
+                relations: ['user', 'friend', 'conversations'],
+            });
+        } catch (error: any) {
+            this._logger.error(error);
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
         }
-        return friend;
     }
 
     public async getAllFriends(): Promise<Friend[]> {
         try {
             return await this._friendRepository.find();
         } catch (error: any) {
+            this._logger.error(error);
             throw new HttpException(
-                'Error can not get friendship associations',
+                error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -82,18 +85,15 @@ export class FriendService {
 
     public async getAllOfUsersFriends(userId: string): Promise<Friend[]> {
         try {
-            const thing = await this._friendRepository.find();
-            // .createQueryBuilder('friends')
-            // .leftJoinAndSelect('friends.user', 'user')
-            // .leftJoinAndSelect('friends.friend', 'friend')
-            // .where('friends.userId = :userId', { userId })
-            // .getMany();
-
-            return thing;
+            return await this._friendRepository.find({
+                where: [
+                    { user: { id: userId } },
+                ],
+            });
         } catch (error: any) {
-            console.log(error);
+            this._logger.error(error);
             throw new HttpException(
-                'Error getting friends list',
+                error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -117,8 +117,9 @@ export class FriendService {
         try {
             return await this._friendRepository.delete(id);
         } catch (error: any) {
+            this._logger.error(error)
             throw new HttpException(
-                'Error deleting friend',
+                error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -131,8 +132,8 @@ export class FriendService {
         try {
 
             const existingFriends: Friend[] = [
-               await this._findFriendship(sender, receiver),
-               await this._findFriendship(receiver, sender),
+                await this._findFriendship(sender, receiver),
+                await this._findFriendship(receiver, sender),
             ];
 
             if (existingFriends[0] === null || existingFriends[1] === null) {
@@ -144,7 +145,7 @@ export class FriendService {
         } catch (error) {
             this._logger.error(error)
             throw new HttpException(
-                'Error finding friends',
+                error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -153,7 +154,7 @@ export class FriendService {
     private async _findFriendship(
         sender: User,
         receiver: User,
-    ) {
+    ): Promise<Friend> {
         try {
             return await this._friendRepository.findOne({
                 where: [
@@ -162,10 +163,9 @@ export class FriendService {
             });
 
         } catch (error) {
-            console.log(error)
             this._logger.error(error);
             throw new HttpException(
-                'Error with finding Friendship',
+                error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -177,11 +177,10 @@ export class FriendService {
     ): Promise<Friend> {
         try {
             const createNewFriend: Friend = await this._createNewFriend(sender, receiver);
-            const friend: Friend = await this.getFriendById(createNewFriend.id);
-            return friend;
+            return await this.getFriendById(createNewFriend.id);
         } catch (error: any) {
             throw new HttpException(
-                'Error creating friendship association',
+                error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -207,14 +206,14 @@ export class FriendService {
             return await this._friendRepository.save(newFriend);
         } catch (error) {
             this._logger.error(error);
-            console.log(error); 
-            throw new HttpException(error, HttpStatus.BAD_REQUEST);
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
         }
     }
 
-    private async _createCryptoKeys(
-        conversation: Conversation,
-    ) {
+    private async _createCryptoKeys(conversation: Conversation): Promise<Friend[]> {
         try {
             const keys: CryptoKeys[] = await this._cryptoKeyService.createCryptoKeys(conversation);
 
@@ -231,8 +230,10 @@ export class FriendService {
 
         } catch (error) {
             this._logger.error(error);
-            console.log(error); 
-            throw new HttpException(error, HttpStatus.BAD_REQUEST);
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
         }
     }
 }

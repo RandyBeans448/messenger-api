@@ -7,12 +7,14 @@ import {
     Body,
     HttpException,
     HttpStatus,
+    Logger,
 } from '@nestjs/common';
 import { CryptoKeyService } from '../services/crypto-key.services';
 import { CryptoKeys } from '../entities/crypto-key.entity';
 
 @Controller('crypto-keys')
 export class CryptoKeyController {
+    private _logger = new Logger(CryptoKeyController.name);
     constructor(private readonly cryptoKeyService: CryptoKeyService) { }
 
     @Get()
@@ -20,8 +22,9 @@ export class CryptoKeyController {
         try {
             return await this.cryptoKeyService.findAll();
         } catch (error) {
+            this._logger.error(error);
             throw new HttpException(
-                'Failed to fetch crypto keys',
+                error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -36,23 +39,9 @@ export class CryptoKeyController {
             }
             return cryptoKey;
         } catch (error) {
-            if (error.status === HttpStatus.NOT_FOUND) {
-                throw error;
-            }
+            this._logger.error(error);
             throw new HttpException(
-                'Failed to fetch the crypto key',
-                HttpStatus.INTERNAL_SERVER_ERROR,
-            );
-        }
-    }
-
-    @Post()
-    async create(@Body() cryptoKey: CryptoKeys) {
-        try {
-            // return await this.cryptoKeyService.createCryptoKeys(cryptoKey);
-        } catch (error) {
-            throw new HttpException(
-                'Failed to create crypto key',
+                error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -66,11 +55,9 @@ export class CryptoKeyController {
                 throw new HttpException('Crypto key not found', HttpStatus.NOT_FOUND);
             }
         } catch (error) {
-            if (error.status === HttpStatus.NOT_FOUND) {
-                throw error;
-            }
+            this._logger.error(error);
             throw new HttpException(
-                'Failed to delete the crypto key',
+                error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }

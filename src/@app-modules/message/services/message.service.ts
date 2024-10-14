@@ -21,7 +21,6 @@ export class MessageService {
         newMessage.sender = payload.sender;
 
         try {
-
             return await this.messageRepository.save(newMessage);
         } catch (error: any) {
             console.error('Error creating message:', error);
