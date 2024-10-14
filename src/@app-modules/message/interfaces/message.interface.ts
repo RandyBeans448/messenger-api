@@ -5,7 +5,7 @@ export namespace MessageNamespace {
 
     export interface MessageInterface {
         message: string;
-        senderId: string;
+        sender: User;
         conversation: Conversation;
         createdAt: string;
         updatedAt: string;

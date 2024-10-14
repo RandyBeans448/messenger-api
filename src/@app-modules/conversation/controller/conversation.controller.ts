@@ -22,7 +22,7 @@ export class ConversationController {
         } catch (error) {
             this._logger.error(error);
             throw new HttpException(
-                'Error getting conversation by user id',
+                error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -35,7 +35,7 @@ export class ConversationController {
         } catch (error) {
             this._logger.error(error);
             throw new HttpException(
-                'Error getting conversation by user id',
+                error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }

@@ -44,7 +44,10 @@ export class FriendRequestController {
     }
 
     @Post('add-friend')
-    public async addFriend(@Req() req: Request, @Body() newFriend: AddFriendDTO) {
+    public async addFriend(
+        @Req() req: Request,
+        @Body() newFriend: AddFriendDTO,
+    ): Promise<void> {
         try {
             await this._friendRequestService.addFriend(
                 req.user.id,

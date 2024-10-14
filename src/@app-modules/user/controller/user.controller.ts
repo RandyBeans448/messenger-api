@@ -31,7 +31,7 @@ export class UserController {
 
     @Get()
     @UseGuards(AuthGuard('jwt'))
-    async getUser(
+    public async getUser(
         @Req() req: Request,
     ): Promise<UserNamespace.LoginUserInterface> {
         return {
@@ -46,7 +46,7 @@ export class UserController {
     }
 
     @Post('create-new-user')
-    async createUser(
+    public async createUser(
         @Req() request: Request,
         @Body() createUserDTO: CreateUserDTO,
     ): Promise<Partial<User>> {
@@ -66,7 +66,7 @@ export class UserController {
 
     @Get('get-all-users')
     @UseGuards(AuthGuard('jwt'))
-    async getAllUsers(): Promise<User[]> {
+    public async getAllUsers(): Promise<User[]> {
         try {
             return this._userService.getAllUsers();
         } catch (error: any) {
@@ -80,7 +80,7 @@ export class UserController {
 
     @Get('get-all-users-with-no-pending-requests')
     @UseGuards(AuthGuard('jwt'))
-    async getAllUsersWithNoPendingRequests(@Req() req: Request): Promise<User[]> {
+    public async getAllUsersWithNoPendingRequests(@Req() req: Request): Promise<User[]> {
         try {
             return this._userService.getAllUsersWithNoPendingRequests(req.user.id);
         } catch (error: any) {
@@ -94,7 +94,7 @@ export class UserController {
 
     @Get('get-user-id/:id')
     @UseGuards(AuthGuard('jwt'))
-    async getUserById(@Param('id') id: string): Promise<User> {
+    public async getUserById(@Param('id') id: string): Promise<User> {
         try {
             return this._userService.getUserById(id, []);
         } catch (error: any) {
@@ -105,7 +105,7 @@ export class UserController {
 
     @Get('available-users')
     @UseGuards(AuthGuard('jwt'))
-    async getUsers(@Req() request: Request): Promise<User[]> {
+    public async getUsers(@Req() request: Request): Promise<User[]> {
         try {
             return this._userService.getOtherUsers(request.user.id);
         } catch (error: any) {
@@ -116,7 +116,7 @@ export class UserController {
 
     @Patch('update-user')
     @UseGuards(AuthGuard('jwt'))
-    async updateUser(@Body() updateUserDto: UpdateUserDTO): Promise<User> {
+    public async updateUser(@Body() updateUserDto: UpdateUserDTO): Promise<User> {
         try {
             return this._userService.updateUser(updateUserDto);
         } catch (error: any) {
@@ -130,7 +130,7 @@ export class UserController {
 
     @Delete('delete-user')
     @UseGuards(AuthGuard('jwt'))
-    async deleteUser(user: User): Promise<DeleteResult> {
+    public async deleteUser(user: User): Promise<DeleteResult> {
         try {
             return this._userService.deleteUser(user);
         } catch (error: any) {

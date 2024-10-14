@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { CryptoKeys } from '../entities/crypto-key.entity';
@@ -7,6 +7,9 @@ import { Conversation } from 'src/@app-modules/conversation/entities/conversatio
 
 @Injectable()
 export class CryptoKeyService {
+
+    private _logger = new Logger(CryptoKeyService.name);
+
     constructor(
         @InjectRepository(CryptoKeys)
         private cryptoKeyRepository: Repository<CryptoKeys>,
@@ -16,7 +19,11 @@ export class CryptoKeyService {
         try {
             return await this.cryptoKeyRepository.find();
         } catch (error) {
-            throw new HttpException('Failed to fetch crypto keys', HttpStatus.INTERNAL_SERVER_ERROR);
+            this._logger.error(error);
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
         }
     }
 
@@ -28,10 +35,11 @@ export class CryptoKeyService {
             }
             return cryptoKey;
         } catch (error) {
-            if (error.status === HttpStatus.NOT_FOUND) {
-                throw error;
-            }
-            throw new HttpException('Failed to fetch the crypto key', HttpStatus.INTERNAL_SERVER_ERROR);
+            this._logger.error(error);
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
         }
     }
 
@@ -39,7 +47,11 @@ export class CryptoKeyService {
         try {
             return await this.cryptoKeyRepository.save(cryptoKey);
         } catch (error) {
-            throw new HttpException('Failed to create crypto key', HttpStatus.INTERNAL_SERVER_ERROR);
+            this._logger.error(error);
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
         }
     }
 
@@ -53,12 +65,11 @@ export class CryptoKeyService {
 
             return result;
         } catch (error) {
-
-            if (error.status === HttpStatus.NOT_FOUND) {
-                throw error;
-            }
-
-            throw new HttpException('Failed to delete the crypto key', HttpStatus.INTERNAL_SERVER_ERROR);
+            this._logger.error(error);
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
         }
     }
 
@@ -92,7 +103,11 @@ export class CryptoKeyService {
                 await this.createNewCryptoKey(cryptoKeyUserTwo),
             ]);
         } catch (error) {
-            throw new HttpException('Failed to create crypto keys', HttpStatus.INTERNAL_SERVER_ERROR);
+            this._logger.error(error);
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
         }
     }
 }

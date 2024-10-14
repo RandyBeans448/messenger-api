@@ -1,13 +1,14 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm'; // You need to create this DTO
 import { Conversation } from '../entities/conversation.entity';
 import { Friend } from 'src/@app-modules/friend/entities/friend.entity';
-import { CryptoKeyService } from 'src/@app-modules/crypto-key/services/crypto-key.services';
-import { CryptoKeys } from 'src/@app-modules/crypto-key/entities/crypto-key.entity';
 
 @Injectable()
 export class ConversationService {
+
+    private _logger = new Logger(ConversationService.name);
+
     constructor(
         @InjectRepository(Conversation)
         private readonly _conversationRepository: Repository<Conversation>,
@@ -18,12 +19,11 @@ export class ConversationService {
         conversation.friend = friendsForConversation;
   
         try {
-            const savedConversation: Conversation = await this._conversationRepository.save(conversation);
-            return savedConversation;
+            return await this._conversationRepository.save(conversation);
         } catch (error) {
-            console.error('Error creating conversation:', error);
+            this._logger.error(error);
             throw new HttpException(
-                'Error creating friendship association',
+                error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -37,14 +37,16 @@ export class ConversationService {
                 },
                 relations: [
                     'friend', 
-                    'friend.cryptoKey', 
+                    'friend.cryptoKey',
+                    'friend.user',
                     'messages',
+                    'messages.sender',
                 ],
             });
         } catch(error) {
-            console.error('Error getting conversation by id:', error);
+            this._logger.error(error);
             throw new HttpException(
-                'Error getting conversation by id',
+                error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -62,9 +64,9 @@ export class ConversationService {
                 },
             });
         } catch(error) {
-            console.error('Error getting conversations for user:', error);
+            this._logger.error(error);
             throw new HttpException(
-                'Error getting conversations for user',
+                error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -74,9 +76,9 @@ export class ConversationService {
         try {
             return await this._conversationRepository.save(conversation);
         } catch(error) {
-            console.error('Error updating conversations for user:', error);
+            this._logger.error(error);
             throw new HttpException(
-                'Error getting updating conversation',
+                error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }

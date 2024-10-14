@@ -3,11 +3,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Conversation } from './entities/conversation.entity';
 import { ConversationController } from './controller/conversation.controller';
 import { ConversationService } from './services/conversation.service';
-import { CryptoKeyModule } from '../crypto-key/crypto-key.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Conversation]),
+
     ],
     controllers: [ConversationController],
     providers: [ConversationService],
