@@ -11,6 +11,8 @@ import { User } from '../entities/user.entity';
 import { Auth0Service } from 'src/@auth/services/auth0.service';
 import { UpdateUserDTO } from '../dto/update-user.dto';
 import { CreateUserDTO } from '../dto/create-user.dto';
+import { Friend } from 'src/@app-modules/friend/entities/friend.entity';
+import { FriendRequest } from 'src/@app-modules/friend-request/entities/friend-request.entity';
 
 @Injectable()
 export class UserService {
@@ -36,10 +38,10 @@ export class UserService {
 
             const user: User = await userQuery
                 .where('user.auth0Id = :auth0Id', { auth0Id })
-                .getOne();   
+                .getOne();
 
             if (!user) throw new UnauthorizedException();
-            
+
             return user;
         } catch (error: any) {
             this._logger.error(error);
@@ -116,30 +118,37 @@ export class UserService {
             console.log(error);
             this._logger.error(error);
             throw error;
-        }   
+        }
     }
 
     public async getAllUsersWithNoPendingRequests(userId: string): Promise<User[]> {
         try {
-            const test = await this._userRepository.find({
-                relations: ['friendRequests', 'friends'],
-                where: {
-                    id: Not(userId),
-                    // friends: {
-                    //     id: Not(userId),
-                    // }
-                    // friendRequests: {
-                    //     requestSentBy: Not(userId),
-                    // },
-                }
-                // relations: ['friendRequests'],
-                // where: {
-                //     friendRequests: {
-                //         requestSentBy: Not(userId),
-                //     },
-                // },
-            });
-            return test;
+
+            const users = await this._userRepository
+                .createQueryBuilder('user')
+                .where('user.id != :userId', { userId })
+                .andWhere(qb => {
+                    const subQuery: string = qb
+                        .subQuery()
+                        .select('friend.friendId')
+                        .from(Friend, 'friend')
+                        .where('friend.userId = :userId')
+                        .getQuery();
+                    return `user.id NOT IN ${subQuery}`;
+                })
+                .andWhere(qb => {
+                    const subQuery: string = qb
+                        .subQuery()
+                        .select('friendRequest.requestSentBy')
+                        .from(FriendRequest, 'friendRequest')
+                        .where('friendRequest.requestSentBy.id = :userId')
+                        .getQuery();
+                    return `user.id NOT IN ${subQuery}`;
+                })
+                .setParameter('userId', userId)
+                .getMany();
+
+            return users;
         } catch (error: any) {
             this._logger.error(error);
             throw new HttpException('', HttpStatus.INTERNAL_SERVER_ERROR);
