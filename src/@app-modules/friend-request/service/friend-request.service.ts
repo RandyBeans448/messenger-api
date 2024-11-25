@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { Brackets, Repository, SelectQueryBuilder } from 'typeorm';
 import { FriendRequest } from '../entities/friend-request.entity';
 import { UserService } from 'src/@app-modules/user/services/user.service';
 import { ResolveFriendRequestDTO } from '../dto/resolve-friend-request.dto';
@@ -67,7 +67,13 @@ export class FriendRequestService {
             return await this._friendRequestRepository
                 .createQueryBuilder('friendRequest')
                 .leftJoinAndSelect('friendRequest.requestSentBy', 'requestSentBy')
-                .where('friendRequest.receiver.id = :userId', { userId })
+                .leftJoinAndSelect('friendRequest.receiver', 'receiver')
+                .where(
+                    new Brackets((qb) => {
+                        qb.where('friendRequest.requestSentBy.id = :userId', { userId })
+                          .orWhere('friendRequest.receiver.id = :userId', { userId });
+                    }),
+                )
                 .execute();
         } catch (error: any) {
             this._logger.error(error);
@@ -92,7 +98,7 @@ export class FriendRequestService {
                     'Friend request not found',
                     HttpStatus.NOT_FOUND,
                 );
-            }    
+            }
 
             if (resolveFriendRequestDto.response) {
                 await this._friendService.addFriend(friendRequest);
