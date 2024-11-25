@@ -124,31 +124,40 @@ export class UserService {
     public async getAllUsersWithNoPendingRequests(userId: string): Promise<User[]> {
         try {
 
-            const users = await this._userRepository
+            return await this._userRepository
                 .createQueryBuilder('user')
                 .where('user.id != :userId', { userId })
-                .andWhere(qb => {
-                    const subQuery: string = qb
+                .andWhere((qb) => {
+
+                    const subQuerySent: string = qb
+                        .subQuery()
+                        .select('friendRequest.receiverId')
+                        .from('friend_request', 'friendRequest')
+                        .where('friendRequest.requestSentById = :userId')
+                        .getQuery();
+
+                    const subQueryReceived: string = qb
+                        .subQuery()
+                        .select('friendRequest.requestSentById')
+                        .from('friend_request', 'friendRequest')
+                        .where('friendRequest.receiverId = :userId')
+                        .getQuery();
+
+                    const subQueryFriends: string = qb
                         .subQuery()
                         .select('friend.friendId')
-                        .from(Friend, 'friend')
+                        .from('friends', 'friend')
                         .where('friend.userId = :userId')
                         .getQuery();
-                    return `user.id NOT IN ${subQuery}`;
+
+                    return `
+                        user.id NOT IN (${subQuerySent}) AND 
+                        user.id NOT IN (${subQueryReceived}) AND 
+                        user.id NOT IN (${subQueryFriends})
+                      `;
                 })
-                .andWhere(qb => {
-                    const subQuery: string = qb
-                        .subQuery()
-                        .select('friendRequest.requestSentBy')
-                        .from(FriendRequest, 'friendRequest')
-                        .where('friendRequest.requestSentBy.id = :userId')
-                        .getQuery();
-                    return `user.id NOT IN ${subQuery}`;
-                })
-                .setParameter('userId', userId)
                 .getMany();
 
-            return users;
         } catch (error: any) {
             this._logger.error(error);
             throw new HttpException('', HttpStatus.INTERNAL_SERVER_ERROR);
@@ -189,9 +198,6 @@ export class UserService {
 
             if (updateUserDto.email) user.email = updateUserDto.email;
             if (updateUserDto.username) user.username = updateUserDto.username;
-
-            // if (updateUserDto.password)
-            //   await this._authService.updateUserPassword(updateUserDto.password);
 
             return await this._userRepository.save(user);
         } catch (error: any) {
