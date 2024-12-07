@@ -31,26 +31,36 @@ export class FriendService {
 
     public async addFriend(acceptedFriendRequest: FriendRequest) {
         try {
-            const sender: User = await this._userService.getUserById(acceptedFriendRequest.requestSentBy.id, []);
-            const receiver: User = await this._userService.getUserById(acceptedFriendRequest.receiver.id, []);
 
-            const newFriendForSender: Friend = await this._createAndGetFriend(sender, receiver);
-            const newFriendForReceiver: Friend = await this._createAndGetFriend(receiver, sender);
+            const [sender, receiver] = await Promise.all([
+                this._userService.getUserById(acceptedFriendRequest.requestSentBy.id, []),
+                this._userService.getUserById(acceptedFriendRequest.receiver.id, []),
+            ]);
 
-            const newConversation: Conversation = await this._conversationService.createConversation([newFriendForSender, newFriendForReceiver]);
+            const [newFriendForSender, newFriendForReceiver] = await Promise.all([
+                this._createAndGetFriend(sender, receiver),
+                this._createAndGetFriend(receiver, sender),
+            ]);
+
+            const newConversation: Conversation = await this._conversationService.createConversation([
+                newFriendForSender,
+                newFriendForReceiver,
+            ]);
+
             await this._conversationService.savedConversation(newConversation);
 
-            newFriendForSender.conversations = [newConversation];
-            newFriendForReceiver.conversations = [newConversation];
+            newFriendForSender.conversations = newConversation;
+            newFriendForReceiver.conversations = newConversation;
 
             await this._friendRepository.save(newFriendForSender);
             await this._friendRepository.save(newFriendForReceiver);
 
             await this._createCryptoKeys(newConversation);
-        } catch (error: any) {
-            await this._logger.error(error);
+
+        } catch (error) {
+            console.error(error);
             throw new HttpException(
-                error,
+                'Error adding friend',
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
@@ -104,8 +114,10 @@ export class FriendService {
             if (!friend) {
                 throw new NotFoundException('Friend not found');
             }
+
             return await this._friendRepository.save(friend);
         } catch (error: any) {
+            await this._logger.error(error);
             throw new HttpException(
                 'Error updating friend',
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -123,6 +135,20 @@ export class FriendService {
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
+    }
+
+    public async alreadyFriends(
+        userId: string,
+        friendId: string,
+    ): Promise<boolean> {
+        const isAlreadyFriend: Friend = await this._friendRepository.findOne({
+            where: {
+                user: { id: userId },
+                friend: { id: friendId },
+            },
+        });
+
+        return isAlreadyFriend ? true : false;
     }
 
     private async _checkToSeeIfFriendShipExists(
@@ -179,6 +205,7 @@ export class FriendService {
             const createNewFriend: Friend = await this._createNewFriend(sender, receiver);
             return await this.getFriendById(createNewFriend.id);
         } catch (error: any) {
+            await this._logger.error(error);
             throw new HttpException(
                 error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -222,7 +249,7 @@ export class FriendService {
 
             friendOne.cryptoKey = keys[0];
             friendTwo.cryptoKey = keys[1];
-
+   
             return await Promise.all([
                 await this.updateFriend(friendOne),
                 await this.updateFriend(friendTwo),

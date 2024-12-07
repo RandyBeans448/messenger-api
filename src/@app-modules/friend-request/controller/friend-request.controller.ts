@@ -49,13 +49,15 @@ export class FriendRequestController {
         @Body() newFriend: AddFriendDTO,
     ): Promise<void> {
         try {
+
             await this._friendRequestService.addFriend(
                 req.user.id,
                 newFriend.newFriendId,
             );
+
             this._logger.log(`Added friend with id of: ${newFriend.newFriendId}`);
         } catch (error: any) {
-            console.log(error);
+            await this._logger.error(error);
             throw new HttpException(
                 'Error creating friendship association',
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -66,11 +68,11 @@ export class FriendRequestController {
     @Patch('resolve-friend-request')
     public async resolveFriendRequest(
         @Body() addFriend: ResolveFriendRequestDTO,
-    ): Promise<'Friend request accepted' | 'Friend request declined'> {
+    ): Promise<any> {
         try {
             return this._friendRequestService.resolveFriendRequest(addFriend);
         } catch (error: any) {
-            console.log(error);
+            await this._logger.error(error);
             throw new HttpException(
                 'Error creating friendship association',
                 HttpStatus.INTERNAL_SERVER_ERROR,
