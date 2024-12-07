@@ -12,12 +12,12 @@ export class CryptoKeyService {
 
     constructor(
         @InjectRepository(CryptoKeys)
-        private cryptoKeyRepository: Repository<CryptoKeys>,
+        private _cryptoKeyRepository: Repository<CryptoKeys>,
     ) { }
 
     public async findAll(): Promise<CryptoKeys[]> {
         try {
-            return await this.cryptoKeyRepository.find();
+            return await this._cryptoKeyRepository.find();
         } catch (error) {
             this._logger.error(error);
             throw new HttpException(
@@ -29,7 +29,7 @@ export class CryptoKeyService {
 
     public async findOne(id: number): Promise<CryptoKeys> {
         try {
-            const cryptoKey: CryptoKeys = await this.cryptoKeyRepository.findOneBy({ id });
+            const cryptoKey: CryptoKeys = await this._cryptoKeyRepository.findOneBy({ id });
             if (!cryptoKey) {
                 throw new HttpException('Crypto key not found', HttpStatus.NOT_FOUND);
             }
@@ -45,7 +45,7 @@ export class CryptoKeyService {
 
     public async createNewCryptoKey(cryptoKey: CryptoKeys): Promise<CryptoKeys> {
         try {
-            return await this.cryptoKeyRepository.save(cryptoKey);
+            return await this._cryptoKeyRepository.save(cryptoKey);
         } catch (error) {
             this._logger.error(error);
             throw new HttpException(
@@ -57,7 +57,7 @@ export class CryptoKeyService {
 
     public async remove(id: number): Promise<DeleteResult> {
         try {
-            const result: DeleteResult = await this.cryptoKeyRepository.delete(id);
+            const result: DeleteResult = await this._cryptoKeyRepository.delete(id);
 
             if (result.affected === 0) {
                 throw new HttpException('Crypto key not found', HttpStatus.NOT_FOUND);
@@ -73,21 +73,19 @@ export class CryptoKeyService {
         }
     }
 
-    public async createCryptoKeys(conversation: Conversation){
+    public async createCryptoKeys(conversation: Conversation): Promise<CryptoKeys[]> {
+
         const cryptoKeyUserOne: CryptoKeys = new CryptoKeys();
-        cryptoKeyUserOne.friend = conversation.friend[0];
-
         const cryptoKeyUserTwo: CryptoKeys = new CryptoKeys();
-        cryptoKeyUserTwo.friend = conversation.friend[1];
 
-        const userOne: crypto.DiffieHellman = crypto.createDiffieHellman(2048);
-        const userOneKey: Buffer = userOne.generateKeys();
+        const ecdhUserOne = crypto.createECDH('prime256v1');
+        const ecdhUserOneKey = ecdhUserOne.generateKeys();
 
-        const userTwo: crypto.DiffieHellman = crypto.createDiffieHellman(userOne.getPrime(), userOne.getGenerator());
-        const userTwoKey: Buffer = userTwo.generateKeys();
+        const ecdhUserTwo = crypto.createECDH('prime256v1');
+        const ecdhUserTwoKey = ecdhUserTwo.generateKeys();
 
-        const userOneSecret: Buffer = userOne.computeSecret(userTwoKey);
-        const userTwoSecret: Buffer = userTwo.computeSecret(userOneKey);
+        const userOneSecret: Buffer = ecdhUserOne.computeSecret(ecdhUserTwoKey);
+        const userTwoSecret: Buffer = ecdhUserTwo.computeSecret(ecdhUserOneKey);
 
         if (!userOneSecret.equals(userTwoSecret)) {
             throw new Error('Shared secrets do not match!');
@@ -98,10 +96,11 @@ export class CryptoKeyService {
 
         try {
 
-            return await Promise.all([
-                await this.createNewCryptoKey(cryptoKeyUserOne),
-                await this.createNewCryptoKey(cryptoKeyUserTwo),
-            ]);
+            // return await Promise.all([
+                const one = await this.createNewCryptoKey(cryptoKeyUserOne);
+                const two = await this.createNewCryptoKey(cryptoKeyUserTwo);
+            // ]);
+            return [one, two];
         } catch (error) {
             this._logger.error(error);
             throw new HttpException(

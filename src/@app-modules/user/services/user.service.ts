@@ -115,7 +115,6 @@ export class UserService {
         try {
             return this._userRepository.find();
         } catch (error: any) {
-            console.log(error);
             this._logger.error(error);
             throw error;
         }

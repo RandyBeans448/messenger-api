@@ -24,12 +24,12 @@ export class Friend {
     @ManyToOne(() => User, { eager: true })
     friend: User;
 
-    @OneToOne(() => CryptoKeys, (cryptoKey) => cryptoKey.friend)
+    @ManyToOne(() => Conversation, (conversation) => conversation.friend, { nullable: true, eager: true, cascade: true })
+    conversations: Conversation;
+
+    @OneToOne(() => CryptoKeys, (cryptoKey) => cryptoKey.friend, { nullable: true, cascade: true })
     @JoinColumn()
     cryptoKey: CryptoKeys;
-
-    @ManyToOne(() => Conversation, (conversation) => conversation.friend, { nullable: false, eager: true })
-    conversations: Conversation[];
 
     @CreateDateColumn({ type: 'timestamp' })
     createdAt: Date;
