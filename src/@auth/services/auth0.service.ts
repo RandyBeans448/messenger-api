@@ -29,23 +29,22 @@ export class Auth0Service {
         } as ManagementClientOptionsWithClientCredentials);
     }
 
-    public async createUser(email: string, username: string): Promise<any> {
-        this._logger.log('Creating New Auth User');
+    public async createUser(
+        email: string,
+        username: string,
+        password: string,
+    ): Promise<any> {
 
-        const generatedPassword: string = await passGenerator.generate({
-            length: 10,
-            symbols: true,
-            numbers: true,
-        });
+        console.log(email, username, password);
+
+        this._logger.log('Creating New Auth User');
 
         const userObj: UserCreate = {
             email: email,
             username: username,
-            password: generatedPassword,
             verify_email: false, // We don't need to verify as we will send a welcome email for them to set their own password
             connection: 'Username-Password-Authentication',
         };
-
         return await this._createUser(userObj);
     }
 
@@ -126,6 +125,7 @@ export class Auth0Service {
             return await this.auth0.users.create(userObj);
         } catch (e) {
             this._logger.error(e.message, e.stack);
+            console.log(e)
             throw e; // Rethrow the original error
         }
     }

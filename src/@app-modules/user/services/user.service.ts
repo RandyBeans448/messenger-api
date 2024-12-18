@@ -11,8 +11,7 @@ import { User } from '../entities/user.entity';
 import { Auth0Service } from 'src/@auth/services/auth0.service';
 import { UpdateUserDTO } from '../dto/update-user.dto';
 import { CreateUserDTO } from '../dto/create-user.dto';
-import { Friend } from 'src/@app-modules/friend/entities/friend.entity';
-import { FriendRequest } from 'src/@app-modules/friend-request/entities/friend-request.entity';
+
 
 @Injectable()
 export class UserService {
@@ -50,21 +49,10 @@ export class UserService {
     }
 
     public async createUser(
-        createUserDTO: CreateUserDTO,
-        idempotencyKey: string | string[],
+        createUserDTO: any,
     ): Promise<Partial<User>> {
         let user: User = null;
-        let authUser = null;
         let userData = {};
-
-        if (this.seenIdempotencyKeys.has(idempotencyKey)) {
-            throw new HttpException(
-                'Idempotency key already seen before',
-                HttpStatus.CONFLICT,
-            );
-        }
-
-        this.seenIdempotencyKeys.add(idempotencyKey);
 
         try {
             const existingDeletedUser: User = await this._userRepository.findOne({
@@ -83,16 +71,10 @@ export class UserService {
                 );
             }
 
-            authUser = await this._authService.createUser(
-                createUserDTO.email,
-                createUserDTO.username,
-            );
-
             userData = {
-                ...userData,
                 username: createUserDTO.username,
                 email: createUserDTO.email,
-                auth0Id: authUser.data.user_id,
+                auth0Id: createUserDTO.userId,
             };
 
             user = await this._userRepository.save(userData).catch((error) => {
