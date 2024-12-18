@@ -48,13 +48,10 @@ export class UserController {
     @Post('create-new-user')
     public async createUser(
         @Req() request: Request,
-        @Body() createUserDTO: CreateUserDTO,
+        @Body() createUserDTO: any,
     ): Promise<Partial<User>> {
         try {
-            const headers: IncomingHttpHeaders = request.headers;
-            const idempotencyKey: string | string[] = headers['idempotency-key'];
-
-            return await this._userService.createUser(createUserDTO, idempotencyKey);
+            return await this._userService.createUser(createUserDTO);
         } catch (error: any) {
             this._logger.error(error);
             throw new HttpException(
