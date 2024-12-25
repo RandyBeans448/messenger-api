@@ -1,6 +1,6 @@
 // app.module.ts
 
-import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { configValidationSchema } from './config.schema';
 import { ConversationModule } from './@app-modules/conversation/conversation.module';
@@ -14,30 +14,35 @@ import { AppController } from './app.controller';
 import { JsonBodyMiddleware } from './@utils/middleware/json-body.middleware';
 import { RawBodyMiddleware } from './@utils/middleware/raw-body.middleware';
 import { FriendRequestModule } from './@app-modules/friend-request/friend-request.module';
+import { SocketModule } from './@socket/socket.module';
+import { CryptoKeyModule } from './@app-modules/crypto-key/crypto-key.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      envFilePath: [`.env`],
-      validationSchema: configValidationSchema,
-    }),
-    AuthModule,
-    UiEnvModule,
-    DatabaseModule,
-    UserModule,
-    FriendModule,
-    FriendRequestModule,
-    ConversationModule,
-    MessageModule,
-  ],
-  controllers: [AppController],
+    imports: [
+        ConfigModule.forRoot({
+            envFilePath: [`.env`],
+            validationSchema: configValidationSchema,
+        }),
+        AuthModule,
+        UiEnvModule,
+        DatabaseModule,
+        ConversationModule,
+        UserModule,
+        FriendModule,
+        FriendRequestModule,
+        MessageModule,
+        SocketModule,
+        CryptoKeyModule,
+    ],
+    controllers: [AppController],
+    providers: [Logger],
 })
 export class AppModule {
-  public configure(consumer: MiddlewareConsumer): void {
-    consumer
-      .apply(RawBodyMiddleware)
-      .forRoutes('*')
-      .apply(JsonBodyMiddleware)
-      .forRoutes('*');
-  }
+    public configure(consumer: MiddlewareConsumer): void {
+        consumer
+            .apply(RawBodyMiddleware)
+            .forRoutes('*')
+            .apply(JsonBodyMiddleware)
+            .forRoutes('*');
+    }
 }

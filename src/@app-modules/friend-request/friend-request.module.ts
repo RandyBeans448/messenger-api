@@ -2,23 +2,19 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FriendRequestController } from './controller/friend-request.controller';
 import { FriendRequestService } from './service/friend-request.service';
-import { UserService } from '../user/services/user.service';
-import { ConfigService } from '@nestjs/config';
-import { Auth0Service } from 'src/@auth/services/auth0.service';
 import { FriendRequest } from './entities/friend-request.entity';
-import { FriendService } from '../friend/services/friend.service';
-import { Friend } from '../friend/entities/friend.entity';
-import { User } from '../user/entities/user.entity';
+import { FriendModule } from '../friend/friend.module';
+import { UserModule } from '../user/user.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([FriendRequest, Friend, User])],
-  controllers: [FriendRequestController],
-  providers: [
-    FriendRequestService,
-    FriendService,
-    ConfigService,
-    UserService,
-    Auth0Service,
-  ],
+    imports: [
+        TypeOrmModule.forFeature([FriendRequest]),
+        FriendModule,
+        UserModule,
+    ],
+    controllers: [FriendRequestController],
+    providers: [
+        FriendRequestService,
+    ],
 })
-export class FriendRequestModule {}
+export class FriendRequestModule { }

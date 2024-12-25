@@ -1,27 +1,36 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  DeleteDateColumn,
-  ManyToOne,
+    Entity,
+    PrimaryGeneratedColumn,
+    CreateDateColumn,
+    UpdateDateColumn,
+    DeleteDateColumn,
+    ManyToOne,
+    Column,
 } from 'typeorm';
 import { Conversation } from '../../conversation/entities/conversation.entity';
+import { User } from '../../user/entities/user.entity';
 
 @Entity('messages')
 export class Message {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
-  @ManyToOne(() => Conversation, (conversation) => conversation.messages)
-  conversation: Conversation;
+    @Column({ type: 'text' })
+    message: string;
 
-  @CreateDateColumn({ type: 'timestamp' })
-  createdAt: Date;
+    @ManyToOne(() => Conversation, (conversation) => conversation.messages)
+    conversation: Conversation;
+    
+    @ManyToOne(() => User, { eager: true })
+    sender: User;
 
-  @UpdateDateColumn({ type: 'timestamp' })
-  updatedAt: Date;
+    @CreateDateColumn({ type: 'timestamp' })
+    createdAt: Date;
 
-  @DeleteDateColumn({ type: 'timestamp', nullable: true })
-  deletedAt: Date;
+    @UpdateDateColumn({ type: 'timestamp' })
+    updatedAt: Date;
+
+    @DeleteDateColumn({ type: 'timestamp', nullable: true })
+    deletedAt: Date;
+    
 }

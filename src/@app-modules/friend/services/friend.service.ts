@@ -1,134 +1,266 @@
 import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
+    HttpException,
+    HttpStatus,
+    Injectable,
+    Logger,
+    NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { Friend } from '../entities/friend.entity';
 import { UserService } from 'src/@app-modules/user/services/user.service';
 import { FriendRequest } from 'src/@app-modules/friend-request/entities/friend-request.entity';
+import { Conversation } from 'src/@app-modules/conversation/entities/conversation.entity';
+import { ConversationService } from 'src/@app-modules/conversation/services/conversation.service';
 import { User } from 'src/@app-modules/user/entities/user.entity';
+import { CryptoKeyService } from 'src/@app-modules/crypto-key/services/crypto-key.services';
+import { CryptoKeys } from 'src/@app-modules/crypto-key/entities/crypto-key.entity';
 
 @Injectable()
 export class FriendService {
-  constructor(
-    @InjectRepository(Friend)
-    private readonly _friendRepository: Repository<Friend>,
-    private readonly _userService: UserService,
-  ) {}
 
-  public async addFriend(acceptedFriendRequest: FriendRequest) {
-    try {
-      console.log(acceptedFriendRequest);
+    private _logger = new Logger(FriendService.name);
 
-      const newFriendForSender: Friend = new Friend();
-      const newFriendForReceiver: Friend = new Friend();
+    constructor(
+        @InjectRepository(Friend)
+        private _friendRepository: Repository<Friend>,
+        private _userService: UserService,
+        private _conversationService: ConversationService,
+        private readonly _cryptoKeyService: CryptoKeyService,
+    ) { }
 
-      const sender: User = await this._userService.getUserById(
-        acceptedFriendRequest.requestSentBy.id,
-        [],
-      );
+    public async addFriend(acceptedFriendRequest: FriendRequest) {
+        try {
 
-      const receiver: User = await this._userService.getUserById(
-        acceptedFriendRequest.receiver.id,
-        [],
-      );
+            const [sender, receiver] = await Promise.all([
+                this._userService.getUserById(acceptedFriendRequest.requestSentBy.id, []),
+                this._userService.getUserById(acceptedFriendRequest.receiver.id, []),
+            ]);
 
-      newFriendForSender.user = sender;
-      newFriendForSender.friend = receiver;
+            const [newFriendForSender, newFriendForReceiver] = await Promise.all([
+                this._createAndGetFriend(sender, receiver),
+                this._createAndGetFriend(receiver, sender),
+            ]);
 
-      newFriendForReceiver.user = receiver;
-      newFriendForReceiver.friend = sender;
+            const newConversation: Conversation = await this._conversationService.createConversation([
+                newFriendForSender,
+                newFriendForReceiver,
+            ]);
 
-      await this._friendRepository.save(newFriendForSender);
-      await this._friendRepository.save(newFriendForReceiver);
-    } catch (error: any) {
-      console.log(error);
-      throw new HttpException(
-        'Error creating friendship association',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+            await this._conversationService.savedConversation(newConversation);
+
+            newFriendForSender.conversations = newConversation;
+            newFriendForReceiver.conversations = newConversation;
+
+            await this._friendRepository.save(newFriendForSender);
+            await this._friendRepository.save(newFriendForReceiver);
+
+            await this._createCryptoKeys(newConversation);
+
+        } catch (error) {
+            console.error(error);
+            throw new HttpException(
+                'Error adding friend',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
     }
-  }
 
-  // public async resolveFriendRequest(
-  //   userId: string,
-  //   resolveFriendRequestDto: ResolveFriendRequestDTO,
-  // ) {
-  //   try {
-  //     const friendRequest: Friend = await this._friendRepository.findOne({
-  //       where: {
-  //         id: resolveFriendRequestDto.id,
-  //       },
-  //     });
-
-  //     // friendRequest.pending = false;
-  //     // friendRequest.accepted = resolveFriendRequestDto.accepted;
-
-  //     // if (friendRequest.accepted) {
-  //     //   await this.addFriend(user, { id: friendRequest.friend.id });
-  //     // } else {
-  //     //   await this.deleteFriend(friendRequest.id);
-  //     // }
-  //   } catch (error: any) {
-  //     throw new HttpException(
-  //       'Error resolving this friendship request',
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
-  //     );
-  //   }
-  // }
-
-  public async getFriendById(id: string): Promise<Friend> {
-    const friend: Friend = await this._friendRepository.findOne({
-      where: { id },
-      relations: ['user', 'friend'],
-    });
-    if (!friend) {
-      throw new NotFoundException('Friend not found');
+    public async getFriendById(id: string): Promise<Friend> {
+        try {
+            return await this._friendRepository.findOne({
+                where: { id },
+                relations: ['user', 'friend', 'conversations'],
+            });
+        } catch (error: any) {
+            this._logger.error(error);
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
     }
-    return friend;
-  }
 
-  public async getAllFriends(): Promise<Friend[]> {
-    try {
-      return await this._friendRepository.find();
-    } catch (error: any) {
-      throw new HttpException(
-        'Error can not get friendship associations',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    public async getAllFriends(): Promise<Friend[]> {
+        try {
+            return await this._friendRepository.find();
+        } catch (error: any) {
+            this._logger.error(error);
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
     }
-  }
 
-  public async getAllOfUsersFriends(userId: string): Promise<Friend[]> {
-    try {
-      const thing = await this._friendRepository.find();
-      // .createQueryBuilder('friends')
-      // .leftJoinAndSelect('friends.user', 'user')
-      // .leftJoinAndSelect('friends.friend', 'friend')
-      // .where('friends.userId = :userId', { userId })
-      // .getMany();
-
-      return thing;
-    } catch (error: any) {
-      console.log(error);
-      throw new HttpException(
-        'Error getting friends list',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    public async getAllOfUsersFriends(userId: string): Promise<Friend[]> {
+        try {
+            return await this._friendRepository.find({
+                where: [
+                    { user: { id: userId } },
+                ],
+            });
+        } catch (error: any) {
+            this._logger.error(error);
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
     }
-  }
 
-  public async deleteFriend(id: string): Promise<DeleteResult> {
-    try {
-      return await this._friendRepository.delete(id);
-    } catch (error: any) {
-      throw new HttpException(
-        'Error deleting friend',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    public async updateFriend(friend: Friend): Promise<Friend> {
+        try {
+            if (!friend) {
+                throw new NotFoundException('Friend not found');
+            }
+
+            return await this._friendRepository.save(friend);
+        } catch (error: any) {
+            await this._logger.error(error);
+            throw new HttpException(
+                'Error updating friend',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
     }
-  }
+
+    public async deleteFriend(id: string): Promise<DeleteResult> {
+        try {
+            return await this._friendRepository.delete(id);
+        } catch (error: any) {
+            this._logger.error(error)
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    public async alreadyFriends(
+        userId: string,
+        friendId: string,
+    ): Promise<boolean> {
+        const isAlreadyFriend: Friend = await this._friendRepository.findOne({
+            where: {
+                user: { id: userId },
+                friend: { id: friendId },
+            },
+        });
+
+        return isAlreadyFriend ? true : false;
+    }
+
+    private async _checkToSeeIfFriendShipExists(
+        sender: User,
+        receiver: User,
+    ): Promise<boolean> {
+        try {
+
+            const existingFriends: Friend[] = [
+                await this._findFriendship(sender, receiver),
+                await this._findFriendship(receiver, sender),
+            ];
+
+            if (existingFriends[0] === null || existingFriends[1] === null) {
+                return false;
+            } else {
+                return true;
+            }
+
+        } catch (error) {
+            this._logger.error(error)
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    private async _findFriendship(
+        sender: User,
+        receiver: User,
+    ): Promise<Friend> {
+        try {
+            return await this._friendRepository.findOne({
+                where: [
+                    { user: sender, friend: receiver },
+                ],
+            });
+
+        } catch (error) {
+            this._logger.error(error);
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    private async _createAndGetFriend(
+        sender: User,
+        receiver: User,
+    ): Promise<Friend> {
+        try {
+            const createNewFriend: Friend = await this._createNewFriend(sender, receiver);
+            return await this.getFriendById(createNewFriend.id);
+        } catch (error: any) {
+            await this._logger.error(error);
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    private async _createNewFriend(
+        sender: User,
+        receiver: User,
+    ): Promise<Friend> {
+        try {
+
+            const doesFriendshipExist: boolean = await this._checkToSeeIfFriendShipExists(sender, receiver);
+
+            if (doesFriendshipExist) {
+                throw new HttpException('Friendship already exists', HttpStatus.BAD_REQUEST);
+            }
+
+            const newFriend: Friend = new Friend();
+
+            newFriend.user = sender;
+            newFriend.friend = receiver;
+
+            return await this._friendRepository.save(newFriend);
+        } catch (error) {
+            this._logger.error(error);
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    private async _createCryptoKeys(conversation: Conversation): Promise<Friend[]> {
+        try {
+            const keys: CryptoKeys[] = await this._cryptoKeyService.createCryptoKeys(conversation);
+
+            const friendOne: Friend = conversation.friend[0];
+            const friendTwo: Friend = conversation.friend[1];
+
+            friendOne.cryptoKey = keys[0];
+            friendTwo.cryptoKey = keys[1];
+   
+            return await Promise.all([
+                await this.updateFriend(friendOne),
+                await this.updateFriend(friendTwo),
+            ]);
+
+        } catch (error) {
+            this._logger.error(error);
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
 }

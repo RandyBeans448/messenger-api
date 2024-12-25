@@ -1,40 +1,42 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  DeleteDateColumn,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-  JoinColumn,
+    Entity,
+    PrimaryGeneratedColumn,
+    CreateDateColumn,
+    UpdateDateColumn,
+    DeleteDateColumn,
+    ManyToOne,
+    OneToMany,
+    OneToOne,
+    JoinColumn,
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity'; // Assuming you have a User entity
 import { Conversation } from '../../conversation/entities/conversation.entity'; // Assuming you have a Conversation entity
+import { CryptoKeys } from '../../crypto-key/entities/crypto-key.entity';
 
 @Entity('friends')
 export class Friend {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
-  @ManyToOne(() => User, (user) => user.friends)
-  user: User;
+    @ManyToOne(() => User, (user) => user.friends)
+    user: User;
 
-  @OneToOne(() => User, { eager: true })
-  @JoinColumn()
-  friend: User;
+    @ManyToOne(() => User, { eager: true })
+    friend: User;
 
-  @OneToMany(() => Conversation, (conversation) => conversation.friend, {
-    nullable: true,
-  })
-  conversations: Conversation[] = null;
+    @ManyToOne(() => Conversation, (conversation) => conversation.friend, { nullable: true, eager: true, cascade: true })
+    conversations: Conversation;
 
-  @CreateDateColumn({ type: 'timestamp' })
-  createdAt: Date;
+    @OneToOne(() => CryptoKeys, (cryptoKey) => cryptoKey.friend, { nullable: true, cascade: true })
+    @JoinColumn()
+    cryptoKey: CryptoKeys;
 
-  @UpdateDateColumn({ type: 'timestamp' })
-  updatedAt: Date;
+    @CreateDateColumn({ type: 'timestamp' })
+    createdAt: Date;
 
-  @DeleteDateColumn({ type: 'timestamp', nullable: true })
-  deletedAt: Date;
+    @UpdateDateColumn({ type: 'timestamp' })
+    updatedAt: Date;
+
+    @DeleteDateColumn({ type: 'timestamp', nullable: true })
+    deletedAt: Date;
 }
