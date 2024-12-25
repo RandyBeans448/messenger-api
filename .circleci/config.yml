@@ -1,0 +1,60 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: circleci/node:16
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.7
+      - run:
+          name: Install Dependencies
+          command: |
+            npm install
+      - run:
+          name: Run Linter
+          command: |
+            npm run lint
+      - run:
+          name: Run Tests
+          command: |
+            npm run test
+
+  docker-build:
+    docker:
+      - image: circleci/node:16
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.7
+      - run:
+          name: Build Docker Image
+          command: |
+            docker-compose -f docker-compose.yml build
+      - run:
+          name: Push Docker Image to Registry
+          command: |
+            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+            docker-compose -f docker-compose.yml push
+
+  deploy:
+    docker:
+      - image: circleci/node:16
+    steps:
+      - run:
+          name: Deploy to Server
+          command: |
+            ssh $DEPLOY_USER@$DEPLOY_HOST "cd /path/to/project && docker-compose pull && docker-compose up -d"
+
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - build
+      - docker-build:
+          requires:
+            - build
+      - deploy:
+          requires:
+            - docker-build
