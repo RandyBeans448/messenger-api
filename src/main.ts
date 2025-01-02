@@ -21,6 +21,6 @@ async function bootstrap() {
     await app.listen(3000);
 
     logger.log(`CORS: ${configService.get('CORS_WHITELIST')}`);
-    logger.log(`Application listening on port 3000`);
+    logger.log(`Application listening on port ${3000}`);
 }
 bootstrap();

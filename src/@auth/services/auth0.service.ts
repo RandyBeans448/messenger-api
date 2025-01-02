@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { Injectable, Logger } from '@nestjs/common';
+import * as passGenerator from 'generate-password';
 import {
     ApiResponse,
     GetUsers200ResponseOneOfInner,
@@ -33,6 +34,8 @@ export class Auth0Service {
         username: string,
         password: string,
     ): Promise<any> {
+
+        console.log(email, username, password);
 
         this._logger.log('Creating New Auth User');
 
