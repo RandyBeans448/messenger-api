@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  backend:
+    image: messenger-api
+    environment:
+      TYPEORM_HOST: postgres-db
+      TYPEORM_PORT: 5432
+      CORS_WHITELIST: "https://app.messenger-db.com,http://localhost,http://localhost:4200,https://localhost:4200,https://localhost:80"
+      TYPEORM_USERNAME: postgres
+      TYPEORM_PASSWORD: postgres
+      TYPEORM_DATABASE: messenger
+      AUTH0_DOMAIN: ''
+      AUTH0_ISS: ''
+      AUTH0_CLIENT_ID: ''
+      AUTH0_CLIENT_SECRET: ''
+      MAIN_UI_BASE_URL: https://app.messenger-db.com
+      SOCKET_BASE_URL: https://app.messenger-db.com
+      MAIN_UI_AUTH0_CLIENT_ID: ''
+      MAIN_UI_AUTH0_CLIENT_DOMAIN: ''
+
+    volumes:
+      - 'messenger-datavolume:/app'
+    ports:
+      - 3000:3000
+      
+  postgres-db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: messenger
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - messenger-datavolume:/var/lib/postgresql/data  
+    ports:
+      - "5432:5432"
+
+volumes:
+  messenger-datavolume:
