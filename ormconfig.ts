@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-export const ORM_CONFIG: OrmConfig = {
+export const ORM_CONFIG = {
   type: 'postgres',
   host: process.env.TYPEORM_HOST,
   port: process.env.TYPEORM_PORT,
@@ -28,18 +28,3 @@ if (process.env.ENV === 'production') {
 export const AppDataSource: DataSource = new DataSource(
   <DataSourceOptions>ORM_CONFIG,
 );
-
-interface OrmConfig {
-  type: string;
-  host: string;
-  port: string;
-  username: string;
-  password: string;
-  database: string;
-  synchronize: boolean;
-  logging: boolean;
-  migrations: string[];
-  migrationsTableName: string;
-  entities: string[];
-  ssl: any;
-}

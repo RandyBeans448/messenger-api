@@ -34,6 +34,7 @@ export class UserController {
     public async getUser(
         @Req() req: Request,
     ): Promise<UserNamespace.LoginUserInterface> {
+
         return {
             id: req.user.id,
             username: req.user.username,

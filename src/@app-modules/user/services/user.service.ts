@@ -10,8 +10,6 @@ import { DeleteResult, Not, Repository, SelectQueryBuilder } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { Auth0Service } from 'src/@auth/services/auth0.service';
 import { UpdateUserDTO } from '../dto/update-user.dto';
-import { CreateUserDTO } from '../dto/create-user.dto';
-
 
 @Injectable()
 export class UserService {

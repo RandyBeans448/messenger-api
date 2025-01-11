@@ -1,8 +1,9 @@
-import { Controller, Get, HttpException, HttpStatus, Logger, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, HttpStatus, Logger, Param, Post, UseGuards } from '@nestjs/common';
 import { ConversationService } from '../services/conversation.service';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
 import { Conversation } from '../entities/conversation.entity';
+import { GetLanguageForTranslationDTO } from '../dto/get-language-for-translation.dto';
 
 @Controller('conversations')
 @UseGuards(AuthGuard('jwt'))
@@ -38,6 +39,16 @@ export class ConversationController {
                 error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
+        }
+    }
+
+    @Post('find-language')
+    public async findLanguage(@Body() body: GetLanguageForTranslationDTO): Promise<any> {
+        try {
+            return await this._conversationService.getSupportedLanguagesByQuery(body.searchQuery);
+        } catch (error: any) {
+            this._logger.error(error);
+            throw new HttpException('There has been an error with this Google API request.', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
