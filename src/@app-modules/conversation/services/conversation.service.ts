@@ -5,6 +5,7 @@ import { Conversation } from '../entities/conversation.entity';
 import { Friend } from 'src/@app-modules/friend/entities/friend.entity';
 import { TranslateService } from 'src/@utils/translate/translate.service';
 import { LanguageResult } from '@google-cloud/translate/build/src/v2';
+import { ConversationNamespace } from '../interfaces/conversation.namespace';
 
 @Injectable()
 export class ConversationService {
@@ -20,7 +21,7 @@ export class ConversationService {
     public async createConversation(friendsForConversation: Friend[]): Promise<Conversation> {
         const conversation: Conversation = new Conversation();
         conversation.friend = friendsForConversation;
-  
+
         try {
             return await this._conversationRepository.save(conversation);
         } catch (error) {
@@ -39,14 +40,14 @@ export class ConversationService {
                     id,
                 },
                 relations: [
-                    'friend', 
+                    'friend',
                     'friend.cryptoKey',
                     'friend.user',
                     'messages',
                     'messages.sender',
                 ],
             });
-        } catch(error) {
+        } catch (error) {
             this._logger.error(error);
             throw new HttpException(
                 error,
@@ -66,7 +67,7 @@ export class ConversationService {
                     },
                 },
             });
-        } catch(error) {
+        } catch (error) {
             this._logger.error(error);
             throw new HttpException(
                 error,
@@ -78,7 +79,7 @@ export class ConversationService {
     public async savedConversation(conversation: Conversation): Promise<Conversation> {
         try {
             return await this._conversationRepository.save(conversation);
-        } catch(error) {
+        } catch (error) {
             this._logger.error(error);
             throw new HttpException(
                 error,
@@ -90,12 +91,33 @@ export class ConversationService {
     public async getSupportedLanguagesByQuery(searchQuery: string): Promise<LanguageResult[]> {
         try {
             return await this._translateService.getSupportedLanguages(searchQuery);
-        } catch(error) {
+        } catch (error) {
             this._logger.error(error);
             throw new HttpException(
                 error,
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
+    }
+
+    public async translateMessage(
+        message: string,
+        language: string,
+    ): Promise<ConversationNamespace.TranslatedText> {
+        try {
+            const text: string = await this._translateService.translateText(
+                message,
+                language,
+            );
+   
+            return { translatedText: text };
+        } catch (error) {
+            this._logger.error(error);
+            throw new HttpException(
+                error,
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+
     }
 }

@@ -4,6 +4,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
 import { Conversation } from '../entities/conversation.entity';
 import { GetLanguageForTranslationDTO } from '../dto/get-language-for-translation.dto';
+import { TranslateMessageDTO } from '../dto/translate-conversation.dto';
+import { ConversationNamespace } from '../interfaces/conversation.namespace';
 
 @Controller('conversations')
 @UseGuards(AuthGuard('jwt'))
@@ -49,6 +51,18 @@ export class ConversationController {
         } catch (error: any) {
             this._logger.error(error);
             throw new HttpException('There has been an error with this Google API request.', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Post('translate')
+    public async translate(@Body() body: TranslateMessageDTO): Promise<ConversationNamespace.TranslatedText> {
+        try {
+            return await this._conversationService.translateMessage(
+                body.message,
+                body.language,
+            );
+        } catch (error: any) {
+            this._logger.error(error);
         }
     }
 }

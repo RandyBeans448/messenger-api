@@ -13,7 +13,7 @@ export class MessageService {
 
     public async createMessage(
         payload: MessageNamespace.NewMessageInterface,
-    ) {
+    ): Promise<Message> {
 
         const newMessage: Message = new Message();
         newMessage.message = payload.message;

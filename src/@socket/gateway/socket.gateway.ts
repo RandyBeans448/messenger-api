@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, OnApplicationShutdown } from '@nestjs/common';
 import {
     MessageBody,
     OnGatewayConnection,
@@ -9,7 +9,6 @@ import {
     WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { MessageNamespace } from 'src/@app-modules/message/interfaces/message.interface';
 import { MessageService } from 'src/@app-modules/message/services/message.service';
 import { User } from 'src/@app-modules/user/entities/user.entity';
@@ -22,12 +21,10 @@ import { User } from 'src/@app-modules/user/entities/user.entity';
         credentials: true,
     },
 })
-export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, OnApplicationShutdown {
     private readonly _logger = new Logger(SocketGateway.name);
 
-    constructor(
-        private readonly messageService: MessageService,
-    ) {}
+    constructor(private readonly messageService: MessageService) {}
 
     @WebSocketServer() private readonly io: Server;
 
@@ -53,6 +50,8 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
      */
     public handleDisconnect(client: Socket): void {
         this._logger.log(`Client disconnected: ${client.id}`);
+
+        client.removeAllListeners();
         this.io.emit('leave', { clientId: client.id });
     }
 
@@ -65,9 +64,11 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         @MessageBody() payload: MessageNamespace.MessageInterface,
     ): Promise<void> {
         try {
-            const { message, conversation, sender, createdAt, updatedAt } = payload; 
+            const { message, conversation, sender, createdAt, updatedAt } = payload;
 
-            const setSender: User = sender.id === conversation.friend[0].user.id ? conversation.friend[0].user : conversation.friend[1].user;  
+            const setSender: User = sender.id === conversation.friend[0].user.id
+                ? conversation.friend[0].user
+                : conversation.friend[1].user;
 
             const newMessage: MessageNamespace.NewMessageInterface = {
                 message: message,
@@ -78,7 +79,8 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
             };
 
             await this.messageService.createMessage(newMessage);
-            this.io.emit('message', payload);
+
+            this.io.to(conversation.id).emit('message', payload);
         } catch (error) {
             this._logger.error('Error handling message', error);
         }
@@ -90,12 +92,24 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
      */
     @SubscribeMessage('disconnectClient')
     public disconnectClient(@MessageBody() clientId: string): void {
-        const client: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> = this.io.sockets.sockets.get(clientId);
+        const client: Socket = this.io.sockets.sockets.get(clientId);
         if (client) {
             client.disconnect(true);
             this._logger.log(`Client ${clientId} has been manually disconnected`);
         } else {
             this._logger.warn(`Client ${clientId} not found`);
         }
+    }
+
+    /**
+     * Lifecycle hook: Called when the application is shutting down
+     * @param signal - Optional signal for shutdown
+     */
+    public onApplicationShutdown(signal?: string): void {
+        this._logger.log('Shutting down WebSocket server');
+
+        this.io.sockets.sockets.forEach((socket) => {
+            socket.disconnect(true);
+        });
     }
 }

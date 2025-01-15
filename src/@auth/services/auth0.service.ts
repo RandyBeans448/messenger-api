@@ -35,8 +35,6 @@ export class Auth0Service {
         password: string,
     ): Promise<any> {
 
-        console.log(email, username, password);
-
         this._logger.log('Creating New Auth User');
 
         const userObj: UserCreate = {
