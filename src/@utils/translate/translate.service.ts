@@ -17,7 +17,6 @@ export class TranslateService {
     public async translateText(text: string, targetLanguage: string): Promise<string> {
         try {
             const [translation] = await this.translateClient.translate(text, targetLanguage);
-            console.log(`Translated text: ${translation}`);
             return translation;
         } catch (error) {
             this._logger.error(error.message)

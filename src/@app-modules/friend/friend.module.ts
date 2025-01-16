@@ -14,7 +14,7 @@ import { CryptoKeyModule } from '../crypto-key/crypto-key.module';
         ]),
         ConversationModule,
         UserModule,
-        // CryptoKeyModule,
+        CryptoKeyModule,
     ],
     controllers: [FriendController],
     providers: [

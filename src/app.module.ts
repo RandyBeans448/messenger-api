@@ -32,7 +32,7 @@ import { TranslateModule } from './@utils/translate/translate.module';
         FriendModule,
         FriendRequestModule,
         MessageModule,
-        // SocketModule,
+        SocketModule,
         CryptoKeyModule,
         TranslateModule,
     ],
