@@ -26,7 +26,7 @@ export class FriendService {
         private _friendRepository: Repository<Friend>,
         private _userService: UserService,
         private _conversationService: ConversationService,
-        private readonly _cryptoKeyService: CryptoKeyService,
+        // private readonly _cryptoKeyService: CryptoKeyService,
     ) { }
 
     public async addFriend(acceptedFriendRequest: FriendRequest) {
@@ -242,13 +242,13 @@ export class FriendService {
 
     private async _createCryptoKeys(conversation: Conversation): Promise<Friend[]> {
         try {
-            const keys: CryptoKeys[] = await this._cryptoKeyService.createCryptoKeys(conversation);
+            // const keys: CryptoKeys[] = await this._cryptoKeyService.createCryptoKeys(conversation);
 
             const friendOne: Friend = conversation.friend[0];
             const friendTwo: Friend = conversation.friend[1];
 
-            friendOne.cryptoKey = keys[0];
-            friendTwo.cryptoKey = keys[1];
+            // friendOne.cryptoKey = keys[0];
+            // friendTwo.cryptoKey = keys[1];
    
             return await Promise.all([
                 await this.updateFriend(friendOne),
