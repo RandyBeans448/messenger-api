@@ -27,17 +27,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         });
     }
 
-    public async validate(
-        payload: UserNamespace.Auth0PayloadInterface,
-    ): Promise<UserNamespace.ValidatedAuth0UserInterface> {
-        const user: UserNamespace.PreparedDataInterface = await this._userService
-            .getUserByAuthId(payload.sub)
-            .catch((e) => {
-                this._logger.error(`User not found with id ${payload.sub}`);
-                this._logger.error(e.message, e.stack);
-                throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-            });
+    // public async validate(
+    //     payload: UserNamespace.Auth0PayloadInterface,
+    // ): Promise<UserNamespace.ValidatedAuth0UserInterface> {
+    //     const user: UserNamespace.PreparedDataInterface = await this._userService
+    //         .getUserByAuthId(payload.sub)
+    //         .catch((e) => {
+    //             this._logger.error(`User not found with id ${payload.sub}`);
+    //             this._logger.error(e.message, e.stack);
+    //             throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    //         });
 
-        return { token: payload, ...user };
-    }
+    //     return { token: payload, ...user };
+    // }
 }
