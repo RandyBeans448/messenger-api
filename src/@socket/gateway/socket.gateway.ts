@@ -78,7 +78,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
                 updatedAt: updatedAt,
             };
 
-            await this.messageService.createMessage(newMessage);
+            // await this.messageService.createMessage(newMessage);
 
             this.io.to(conversation.id).emit('message', payload);
         } catch (error) {
