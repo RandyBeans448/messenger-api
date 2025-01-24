@@ -19,8 +19,8 @@ services:
       MAIN_UI_AUTH0_CLIENT_ID: ${MAIN_UI_AUTH0_CLIENT_ID}
       MAIN_UI_AUTH0_CLIENT_DOMAIN: ${MAIN_UI_AUTH0_CLIENT_DOMAIN}
 
-    volumes:
-      - 'messenger-datavolume:/app'
+    # volumes:
+    #   - 'messenger-datavolume:/app'
     ports:
       - 3000:3000
       
@@ -32,7 +32,7 @@ services:
       POSTGRES_USER: ${TYPEORM_USERNAME}
       POSTGRES_PASSWORD: ${TYPEORM_PASSWORD}
     volumes:
-      - postgresql_data:/var/lib/postgresql/data
+      - messenger-datavolume:/var/lib/postgresql/data
     ports:
       - ${TYPEORM_PORT}:${TYPEORM_PORT}
 
