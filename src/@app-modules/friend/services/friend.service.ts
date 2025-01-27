@@ -51,11 +51,11 @@ export class FriendService {
 
             newFriendForSender.conversations = newConversation;
             newFriendForReceiver.conversations = newConversation;
+        
+            await this._cryptoKeyService.createCryptoKeys(newConversation);
 
             await this._friendRepository.save(newFriendForSender);
             await this._friendRepository.save(newFriendForReceiver);
-
-            await this._cryptoKeyService.createCryptoKeys(newConversation);
 
         } catch (error) {
             console.error(error);
