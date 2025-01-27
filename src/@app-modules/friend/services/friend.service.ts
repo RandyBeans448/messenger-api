@@ -51,11 +51,21 @@ export class FriendService {
 
             newFriendForSender.conversations = newConversation;
             newFriendForReceiver.conversations = newConversation;
-        
-            await this._cryptoKeyService.createCryptoKeys(newConversation);
 
             await this._friendRepository.save(newFriendForSender);
             await this._friendRepository.save(newFriendForReceiver);
+
+            const getNewConversation: Conversation = await this._conversationService.getConversationById(newConversation.id);
+        
+            const keys = await this._cryptoKeyService.createCryptoKeys(getNewConversation);
+
+            newFriendForSender.cryptoKey = keys[0];
+            newFriendForReceiver.cryptoKey = keys[1];
+
+            await this._friendRepository.save(newFriendForSender);
+            await this._friendRepository.save(newFriendForReceiver);
+
+            return getNewConversation;
 
         } catch (error) {
             console.error(error);

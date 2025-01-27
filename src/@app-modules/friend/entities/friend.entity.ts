@@ -27,7 +27,7 @@ export class Friend {
     @ManyToOne(() => Conversation, (conversation) => conversation.friend, { nullable: true, eager: true, cascade: true })
     conversations: Conversation;
 
-    @OneToOne(() => CryptoKeys, (cryptoKey) => cryptoKey.friend, { nullable: true, cascade: true })
+    @OneToOne(() => CryptoKeys, (cryptoKey) => cryptoKey.friend, { nullable: true, eager: true, cascade: true })
     @JoinColumn()
     cryptoKey: CryptoKeys;
 

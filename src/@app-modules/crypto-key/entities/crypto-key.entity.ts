@@ -9,7 +9,7 @@ export class CryptoKeys {
   @Column()
   sharedSecret: string;
 
-  @OneToOne(() => Friend, (friend) => friend.cryptoKey, { eager: true, })
+  @OneToOne(() => Friend, (friend) => friend.cryptoKey)
   friend: Friend;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

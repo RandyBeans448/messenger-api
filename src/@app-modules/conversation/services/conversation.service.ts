@@ -33,15 +33,15 @@ export class ConversationService {
         }
     }
 
-    public async getConversationById(id: string): Promise<Conversation> {
+    public async getConversationById(id: string): Promise<any> {
         try {
+
             return await this._conversationRepository.findOne({
                 where: {
                     id,
                 },
                 relations: [
                     'friend',
-                    'friend.cryptoKey',
                     'friend.user',
                     'messages',
                     'messages.sender',
