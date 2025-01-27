@@ -55,7 +55,7 @@ export class FriendService {
             await this._friendRepository.save(newFriendForSender);
             await this._friendRepository.save(newFriendForReceiver);
 
-            // await this._createCryptoKeys(newConversation);
+            await this._cryptoKeyService.createCryptoKeys(newConversation);
 
         } catch (error) {
             console.error(error);
