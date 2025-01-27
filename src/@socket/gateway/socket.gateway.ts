@@ -7,6 +7,7 @@ import {
     SubscribeMessage,
     WebSocketGateway,
     WebSocketServer,
+    ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { MessageNamespace } from 'src/@app-modules/message/interfaces/message.interface';
@@ -16,100 +17,134 @@ import { User } from 'src/@app-modules/user/entities/user.entity';
 @WebSocketGateway({
     namespace: 'chatroom',
     cors: {
-        origin: 'http://localhost:4200',
+        origin: ['http://localhost:4200'],
         methods: ['GET', 'POST'],
         credentials: true,
     },
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    transports: ['websocket', 'polling'],
+    cookie: true,
 })
 export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, OnApplicationShutdown {
     private readonly _logger = new Logger(SocketGateway.name);
+    private readonly connectedClients = new Map<string, Socket>();
 
     constructor(private readonly messageService: MessageService) {}
 
     @WebSocketServer() private readonly io: Server;
 
-    /**
-     * Lifecycle hook: Called after WebSocket server initialization
-     */
     public afterInit(server: Server): void {
         this._logger.log('WebSocket server initialized');
+        
+        // Set up error handling for the server
+        this.io.on('connect_error', (err) => {
+            this._logger.error(`Connection error: ${err.message}`);
+        });
+
+        this.io.on('error', (err) => {
+            this._logger.error(`Socket server error: ${err.message}`);
+        });
     }
 
-    /**
-     * Lifecycle hook: Called when a client connects
-     * @param client - The connected client socket
-     */
-    public handleConnection(client: Socket): void {
-        this._logger.log(`Client connected: ${client.id}`);
-        this.io.emit('join', { clientId: client.id });
+    public async handleConnection(@ConnectedSocket() client: Socket): Promise<void> {
+        try {
+            const conversationId = client.handshake.query.conversationId as string;
+            if (!conversationId) {
+                client.disconnect(true);
+                return;
+            }
+
+            this.connectedClients.set(client.id, client);
+            await client.join(conversationId);
+            
+            this._logger.log(`Client connected: ${client.id} to conversation: ${conversationId}`);
+            
+            this.io.to(conversationId).emit('join', { 
+                clientId: client.id,
+                timestamp: new Date().toISOString()
+            });
+
+            // Set up error handling for individual client
+            client.on('error', (error) => {
+                this._logger.error(`Error from client ${client.id}:`, error);
+            });
+
+        } catch (error) {
+            this._logger.error(`Connection error for client ${client.id}:`, error);
+            client.disconnect(true);
+        }
     }
 
-    /**
-     * Lifecycle hook: Called when a client disconnects
-     * @param client - The disconnected client socket
-     */
-    public handleDisconnect(client: Socket): void {
-        this._logger.log(`Client disconnected: ${client.id}`);
+    public handleDisconnect(@ConnectedSocket() client: Socket): void {
+        try {
+            const conversationId = client.handshake.query.conversationId as string;
+            
+            this.connectedClients.delete(client.id);
+            client.removeAllListeners();
+            
+            if (conversationId) {
+                this.io.to(conversationId).emit('leave', { 
+                    clientId: client.id,
+                    timestamp: new Date().toISOString()
+                });
+            }
 
-        client.removeAllListeners();
-        this.io.emit('leave', { clientId: client.id });
+            this._logger.log(`Client disconnected: ${client.id}`);
+        } catch (error) {
+            this._logger.error(`Disconnect error for client ${client.id}:`, error);
+        }
     }
 
-    /**
-     * Handles incoming chat messages
-     * @param payload - The message payload containing conversation details
-     */
     @SubscribeMessage('message')
     public async handleMessage(
+        @ConnectedSocket() client: Socket,
         @MessageBody() payload: MessageNamespace.MessageInterface,
     ): Promise<void> {
         try {
             const { message, conversation, sender, createdAt, updatedAt } = payload;
+
+            if (!message || !conversation || !sender) {
+                throw new Error('Invalid message payload');
+            }
 
             const setSender: User = sender.id === conversation.friend[0].user.id
                 ? conversation.friend[0].user
                 : conversation.friend[1].user;
 
             const newMessage: MessageNamespace.NewMessageInterface = {
-                message: message,
-                conversation: conversation,
+                message,
+                conversation,
                 sender: setSender,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
+                createdAt,
+                updatedAt,
             };
 
             await this.messageService.createMessage(newMessage);
 
-            this.io.emit('message', payload);
+            this.io.to(conversation.id).emit('message', {
+                ...payload,
+                timestamp: new Date().toISOString()
+            });
+
         } catch (error) {
-            this._logger.error('Error handling message', error);
+            this._logger.error(`Error handling message from client ${client.id}:`, error);
+            client.emit('error', { message: 'Failed to process message' });
         }
     }
 
-    /**
-     * Manually disconnect a client by ID
-     * @param clientId - The ID of the client to disconnect
-     */
-    @SubscribeMessage('disconnectClient')
-    public disconnectClient(@MessageBody() clientId: string): void {
-        const client: Socket = this.io.sockets.sockets.get(clientId);
-        if (client) {
-            client.disconnect(true);
-            this._logger.log(`Client ${clientId} has been manually disconnected`);
-        } else {
-            this._logger.warn(`Client ${clientId} not found`);
-        }
-    }
-
-    /**
-     * Lifecycle hook: Called when the application is shutting down
-     * @param signal - Optional signal for shutdown
-     */
     public onApplicationShutdown(signal?: string): void {
-        this._logger.log('Shutting down WebSocket server');
+        this._logger.log(`Shutting down WebSocket server (signal: ${signal})`);
 
-        this.io.sockets.sockets.forEach((socket) => {
-            socket.disconnect(true);
+        this.connectedClients.forEach((socket, id) => {
+            try {
+                socket.emit('shutdown', { message: 'Server shutting down' });
+                socket.disconnect(true);
+            } catch (error) {
+                this._logger.error(`Error disconnecting client ${id}:`, error);
+            }
         });
+
+        this.connectedClients.clear();
     }
 }
