@@ -4,7 +4,8 @@ import { getCorsArray } from './bootstrap/cors.bootstrap';
 import { ConfigService } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { loggerConfig } from './@utils/logger/logger.config';
-import { INestApplication, Logger } from '@nestjs/common';
+import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
+import rateLimit from 'express-rate-limit';
 
 const logger: Logger = new Logger('Bootstrap');
 
@@ -15,8 +16,16 @@ async function bootstrap() {
     });
 
     const configService: ConfigService = app.get(ConfigService);
-
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
     app.enableCors({ origin: getCorsArray(configService.get('CORS_WHITELIST')) });
+
+    app.use(
+        rateLimit({
+            windowMs: 15 * 60 * 1000, // 15 minutes
+            max: 100, // Limit each IP to 100 requests per window
+            message: 'Too many requests, please try again later.',
+        })
+    );
 
     await app.listen(3000);
 

@@ -15,7 +15,7 @@ import { MessageService } from 'src/@app-modules/message/services/message.servic
 import { User } from 'src/@app-modules/user/entities/user.entity';
 
 @WebSocketGateway({
-    namespace: 'chatroom',
+    namespace: '/api/chatroom',
     cors: {
         origin: ['http://localhost:4200'],
         methods: ['GET', 'POST'],
