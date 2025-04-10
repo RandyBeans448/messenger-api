@@ -49,12 +49,10 @@ export class FriendRequestController {
         @Body() newFriend: AddFriendDTO,
     ): Promise<void> {
         try {
-
             await this._friendRequestService.addFriend(
                 req.user.id,
                 newFriend.newFriendId,
             );
-
             this._logger.log(`Added friend with id of: ${newFriend.newFriendId}`);
         } catch (error: any) {
             await this._logger.error(error);

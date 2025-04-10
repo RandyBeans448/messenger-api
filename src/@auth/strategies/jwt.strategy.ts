@@ -4,7 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UserService } from 'src/@app-modules/user/services/user.service';
 import * as dotenv from 'dotenv';
 import { passportJwtSecret } from 'jwks-rsa';
-import { UserNamespace } from 'src/@app-modules/user/interfaces/user.interface';
+import { UserNamespace } from 'src/@app-modules/user/namespace/user.namespace';
 
 dotenv.config();
 @Injectable()

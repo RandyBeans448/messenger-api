@@ -13,15 +13,13 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
-import { CreateUserDTO } from '../dto/create-user.dto';
 import { User } from '../entities/user.entity';
 import { UpdateUserDTO } from '../dto/update-user.dto';
 import { DeleteResult } from 'typeorm';
 import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'src/@core/request.interface';
 import { AuthGuard } from '@nestjs/passport';
-import { IncomingHttpHeaders } from 'http';
-import { UserNamespace } from '../interfaces/user.interface';
+import { UserNamespace } from '../namespace/user.namespace';
 
 @Controller('user')
 @ApiTags('user')
@@ -48,7 +46,6 @@ export class UserController {
 
     @Post('create-new-user')
     public async createUser(
-        @Req() request: Request,
         @Body() createUserDTO: any,
     ): Promise<Partial<User>> {
         try {

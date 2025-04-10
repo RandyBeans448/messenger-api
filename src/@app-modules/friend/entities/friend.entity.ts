@@ -5,12 +5,11 @@ import {
     UpdateDateColumn,
     DeleteDateColumn,
     ManyToOne,
-    OneToMany,
     OneToOne,
     JoinColumn,
 } from 'typeorm';
-import { User } from '../../user/entities/user.entity'; // Assuming you have a User entity
-import { Conversation } from '../../conversation/entities/conversation.entity'; // Assuming you have a Conversation entity
+import { User } from '../../user/entities/user.entity';
+import { Conversation } from '../../conversation/entities/conversation.entity';
 import { CryptoKeys } from '../../crypto-key/entities/crypto-key.entity';
 
 @Entity('friends')

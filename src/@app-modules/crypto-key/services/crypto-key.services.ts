@@ -97,8 +97,7 @@ export class CryptoKeyService {
     
             cryptoKeyUserOne.sharedSecret = userOneSecret.toString('hex');
             cryptoKeyUserTwo.sharedSecret = userTwoSecret.toString('hex');
-    
-            // Save both keys atomically
+
             const [keyOne, keyTwo] = await Promise.all([
                 this.createNewCryptoKey(cryptoKeyUserOne),
                 this.createNewCryptoKey(cryptoKeyUserTwo),
@@ -113,5 +112,4 @@ export class CryptoKeyService {
             );
         }
     }
-    
 }

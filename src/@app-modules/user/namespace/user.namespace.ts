@@ -1,7 +1,6 @@
 import { FriendRequest } from 'src/@app-modules/friend-request/entities/friend-request.entity';
 import { Friend } from 'src/@app-modules/friend/entities/friend.entity';
 
-/* eslint-disable @typescript-eslint/no-namespace */
 export namespace UserNamespace {
     export interface LoginUserInterface {
         id: string;

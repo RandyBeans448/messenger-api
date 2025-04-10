@@ -7,7 +7,7 @@ export const loggerConfig = (level: 'info' | 'error' | 'debug') => {
         format: format.combine(
             format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
             format.json(),
-            // printf allows us to order which data we want to log first
+
             format.printf((info) => {
                 return JSON.stringify({
                     timestamp: info.timestamp,

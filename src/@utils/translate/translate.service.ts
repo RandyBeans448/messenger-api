@@ -7,7 +7,6 @@ export class TranslateService {
     private _logger: Logger = new Logger(TranslateService.name);
     private translateClient: Translate;
 
-
     constructor(private _configService: ConfigService) {
         this.translateClient = new Translate({
             key: this._configService.get('GOOGLE_TRANSLATION_API_KEY'),

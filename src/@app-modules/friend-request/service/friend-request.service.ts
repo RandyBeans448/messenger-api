@@ -5,7 +5,6 @@ import { FriendRequest } from '../entities/friend-request.entity';
 import { UserService } from 'src/@app-modules/user/services/user.service';
 import { ResolveFriendRequestDTO } from '../dto/resolve-friend-request.dto';
 import { FriendService } from 'src/@app-modules/friend/services/friend.service';
-import { Friend } from 'src/@app-modules/friend/entities/friend.entity';
 import { User } from 'src/@app-modules/user/entities/user.entity';
 
 @Injectable()
@@ -109,7 +108,7 @@ export class FriendRequestService {
             }
     
             if (resolveFriendRequestDto.response) {
-                // Execute addFriend and deleteFriend in parallel
+
                 await Promise.all([
                     this._friendService.addFriend(friendRequest),
                     this.deleteFriendRequest(friendRequest.id),
@@ -117,7 +116,7 @@ export class FriendRequestService {
 
                 return { message: 'Friend request accepted' };
             } else {
-                // Decline only deletes the request
+
                 await this.deleteFriendRequest(friendRequest.id);
                 return { message: 'Friend request declined' };
             }

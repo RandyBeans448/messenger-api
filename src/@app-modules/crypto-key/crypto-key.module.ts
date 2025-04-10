@@ -5,9 +5,7 @@ import { CryptoKeyService } from './services/crypto-key.services';
 import { CryptoKeys } from './entities/crypto-key.entity';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([CryptoKeys]),
-    ],
+    imports: [TypeOrmModule.forFeature([CryptoKeys])],
     providers: [CryptoKeyService],
     controllers: [CryptoKeyController],
     exports: [CryptoKeyService],

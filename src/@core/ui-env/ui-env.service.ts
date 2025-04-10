@@ -1,4 +1,3 @@
-// ui-env.service.ts
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UiEnvNamespace } from './interfaces/ui-env.namespace';

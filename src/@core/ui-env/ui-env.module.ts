@@ -1,4 +1,3 @@
-// ui-env.module.ts
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UiEnvController } from './ui-env.controller';

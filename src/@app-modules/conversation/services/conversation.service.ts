@@ -1,11 +1,11 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm'; // You need to create this DTO
+import { Repository } from 'typeorm';
 import { Conversation } from '../entities/conversation.entity';
 import { Friend } from 'src/@app-modules/friend/entities/friend.entity';
 import { TranslateService } from 'src/@utils/translate/translate.service';
 import { LanguageResult } from '@google-cloud/translate/build/src/v2';
-import { ConversationNamespace } from '../interfaces/conversation.namespace';
+import { ConversationNamespace } from '../namespace/conversation.namespace';
 
 @Injectable()
 export class ConversationService {
@@ -118,6 +118,5 @@ export class ConversationService {
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
-
     }
 }

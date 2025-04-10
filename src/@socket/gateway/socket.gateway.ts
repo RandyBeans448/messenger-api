@@ -10,7 +10,7 @@ import {
     ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { MessageNamespace } from 'src/@app-modules/message/interfaces/message.interface';
+import { MessageNamespace } from 'src/@app-modules/message/namespace/message.namespace';
 import { MessageService } from 'src/@app-modules/message/services/message.service';
 import { User } from 'src/@app-modules/user/entities/user.entity';
 
@@ -36,8 +36,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
     public afterInit(server: Server): void {
         this._logger.log('WebSocket server initialized');
-        
-        // Set up error handling for the server
+    
         this.io.on('connect_error', (err) => {
             this._logger.error(`Connection error: ${err.message}`);
         });
@@ -65,7 +64,6 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
                 timestamp: new Date().toISOString()
             });
 
-            // Set up error handling for individual client
             client.on('error', (error) => {
                 this._logger.error(`Error from client ${client.id}:`, error);
             });

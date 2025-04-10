@@ -1,4 +1,3 @@
-// ui-env.controller.ts
 import { Controller, Get, Param } from '@nestjs/common';
 import { UiEnvService } from './ui-env.service';
 import { UiEnvNamespace } from './interfaces/ui-env.namespace';

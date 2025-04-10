@@ -1,23 +1,28 @@
 version: '3.8'
 
 services:
-  backend:
-    image: messenger-api
-    environment:
-      TYPEORM_HOST: ${TYPEORM_HOST}
-      TYPEORM_PORT: ${TYPEORM_PORT}
-      CORS_WHITELIST: ${CORS_WHITELIST}
-      TYPEORM_USERNAME: ${TYPEORM_USERNAME}
-      TYPEORM_PASSWORD: ${TYPEORM_PASSWORD}
-      TYPEORM_DATABASE: ${TYPEORM_DATABASE}
-      AUTH0_DOMAIN: ${AUTH0_DOMAIN}
-      AUTH0_ISS: ${AUTH0_ISS}
-      AUTH0_CLIENT_ID: ${AUTH0_CLIENT_ID}
-      AUTH0_CLIENT_SECRET: ${AUTH0_CLIENT_SECRET}
-      MAIN_UI_BASE_URL: ${MAIN_UI_BASE_URL}
-      SOCKET_BASE_URL: ${SOCKET_BASE_URL}
-      MAIN_UI_AUTH0_CLIENT_ID: ${MAIN_UI_AUTH0_CLIENT_ID}
-      MAIN_UI_AUTH0_CLIENT_DOMAIN: ${MAIN_UI_AUTH0_CLIENT_DOMAIN}
+  # backend:
+  #   image: messenger-api
+  #   environment:
+  #     TYPEORM_HOST: ${TYPEORM_HOST}
+  #     TYPEORM_PORT: ${TYPEORM_PORT}
+  #     CORS_WHITELIST: ${CORS_WHITELIST}
+  #     TYPEORM_USERNAME: ${TYPEORM_USERNAME}
+  #     TYPEORM_PASSWORD: ${TYPEORM_PASSWORD}
+  #     TYPEORM_DATABASE: ${TYPEORM_DATABASE}
+  #     AUTH0_DOMAIN: ${AUTH0_DOMAIN}
+  #     AUTH0_ISS: ${AUTH0_ISS}
+  #     AUTH0_CLIENT_ID: ${AUTH0_CLIENT_ID}
+  #     AUTH0_CLIENT_SECRET: ${AUTH0_CLIENT_SECRET}
+  #     MAIN_UI_BASE_URL: ${MAIN_UI_BASE_URL}
+  #     SOCKET_BASE_URL: ${SOCKET_BASE_URL}
+  #     MAIN_UI_AUTH0_CLIENT_ID: ${MAIN_UI_AUTH0_CLIENT_ID}
+  #     MAIN_UI_AUTH0_CLIENT_DOMAIN: ${MAIN_UI_AUTH0_CLIENT_DOMAIN}
+
+    # volumes:
+    #   - 'messenger-datavolume:/app'
+    # ports:
+    #   - ${BACKEND_PORT}:${BACKEND_PORT}
       
   postgres-db:
     image: postgres:13
@@ -28,6 +33,8 @@ services:
       POSTGRES_PASSWORD: ${TYPEORM_PASSWORD}
     volumes:
       - messenger-datavolume:/var/lib/postgresql/data
+    ports:
+      - ${TYPEORM_PORT}:${TYPEORM_PORT}
 
 volumes:
   messenger-datavolume:

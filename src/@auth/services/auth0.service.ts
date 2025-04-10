@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { Injectable, Logger } from '@nestjs/common';
-import * as passGenerator from 'generate-password';
+
 import {
     ApiResponse,
     GetUsers200ResponseOneOfInner,
@@ -32,7 +32,6 @@ export class Auth0Service {
     public async createUser(
         email: string,
         username: string,
-        password: string,
     ): Promise<any> {
 
         this._logger.log('Creating New Auth User');
@@ -40,7 +39,7 @@ export class Auth0Service {
         const userObj: UserCreate = {
             email: email,
             username: username,
-            verify_email: false, // We don't need to verify as we will send a welcome email for them to set their own password
+            verify_email: false,
             connection: 'Username-Password-Authentication',
         };
         return await this._createUser(userObj);
@@ -49,60 +48,12 @@ export class Auth0Service {
     public async updateUserPassword(
         userAuth0Id: string,
     ): Promise<ApiResponse<PostPasswordChange201Response>> {
-        // return this.auth0.createPasswordChangeTicket({
-        //   user_id: userAuth0Id,
-        //   client_id: this._config.get('AUTH0_CLIENT_ID'),
-        // });
-
         return await this.auth0.tickets.changePassword({
             user_id: userAuth0Id,
             result_url: 'YOUR_RESET_PASSWORD_REDIRECT_URL',
             connection_id: 'YOUR_CONNECTION_ID',
         });
     }
-
-    // public async updateUser(
-    //   auth0Id: string,
-    //   updateUserValues: UpdateUserInterface,
-    //   auth0Options: { verifyEmail: boolean } = { verifyEmail: true },
-    // ): Promise<User<AppMetadata, UserMetadata>> {
-    //   this._logger.log('Updating exsisting Auth User');
-
-    //   const auth0Object: ObjectWithId = {
-    //     id: auth0Id,
-    //   };
-
-    //   if (updateUserValues.password) {
-    //     const userPasswordObj: UserData = {
-    //       password: updateUserValues?.password,
-    //     };
-
-    //     await this.auth0.updateUser(auth0Object, userPasswordObj).catch((e) => {
-    //       this._logger.error(e.message, e.stack);
-    //       throw new Error(e.message);
-    //     });
-    //   }
-
-    //   const userObj: UserData = {
-    //     email: updateUserValues?.email,
-    //     name: startCase(
-    //       `${updateUserValues?.firstName} ${updateUserValues?.lastName}`,
-    //     ),
-    //     family_name: startCase(updateUserValues?.firstName),
-    //     given_name: startCase(updateUserValues?.lastName),
-    //     nickname: `${updateUserValues?.firstName.toLowerCase()}${updateUserValues?.lastName.toLowerCase()}`,
-    //     verify_email: auth0Options.verifyEmail,
-    //   };
-
-    //   const user: User<AppMetadata, UserMetadata> = await this.auth0
-    //     .updateUser(auth0Object, userObj)
-    //     .catch((e) => {
-    //       this._logger.error(e.message, e.stack);
-    //       throw new Error(e.message);
-    //     });
-
-    //   return user;
-    // }
 
     public async removeUser(userId: string): Promise<void> {
         this._logger.log(`Removing User from Auth0 ${userId}`);
@@ -124,7 +75,7 @@ export class Auth0Service {
         } catch (e) {
             this._logger.error(e.message, e.stack);
             console.log(e)
-            throw e; // Rethrow the original error
+            throw e;
         }
     }
 }

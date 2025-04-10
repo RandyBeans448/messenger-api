@@ -5,7 +5,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Conversation } from '../entities/conversation.entity';
 import { GetLanguageForTranslationDTO } from '../dto/get-language-for-translation.dto';
 import { TranslateMessageDTO } from '../dto/translate-conversation.dto';
-import { ConversationNamespace } from '../interfaces/conversation.namespace';
+import { ConversationNamespace } from '../namespace/conversation.namespace';
 
 @Controller('conversations')
 @UseGuards(AuthGuard('jwt'))

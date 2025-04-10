@@ -15,8 +15,6 @@ import { UpdateUserDTO } from '../dto/update-user.dto';
 export class UserService {
     private _logger = new Logger('UserService');
 
-    private seenIdempotencyKeys = new Set();
-
     constructor(
         @InjectRepository(User)
         private _userRepository: Repository<User>,

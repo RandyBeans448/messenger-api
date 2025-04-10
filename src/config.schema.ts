@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import * as Joi from 'joi';
 
 export const configValidationSchema: Joi.ObjectSchema<any> = Joi.object({

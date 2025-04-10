@@ -57,7 +57,7 @@ export class FriendService {
 
             const getNewConversation: Conversation = await this._conversationService.getConversationById(newConversation.id);
         
-            const keys = await this._cryptoKeyService.createCryptoKeys(getNewConversation);
+            const keys: CryptoKeys[] = await this._cryptoKeyService.createCryptoKeys(getNewConversation);
 
             newFriendForSender.cryptoKey = keys[0];
             newFriendForReceiver.cryptoKey = keys[1];
@@ -249,28 +249,4 @@ export class FriendService {
             );
         }
     }
-
-    // private async _createCryptoKeys(conversation: Conversation): Promise<Friend[]> {
-    //     try {
-    //         const keys: CryptoKeys[] = await this._cryptoKeyService.createCryptoKeys(conversation);
-
-    //         const friendOne: Friend = conversation.friend[0];
-    //         const friendTwo: Friend = conversation.friend[1];
-
-    //         friendOne.cryptoKey = keys[0];
-    //         friendTwo.cryptoKey = keys[1];
-   
-    //         return await Promise.all([
-    //             await this.updateFriend(friendOne),
-    //             await this.updateFriend(friendTwo),
-    //         ]);
-
-    //     } catch (error) {
-    //         this._logger.error(error);
-    //         throw new HttpException(
-    //             error,
-    //             HttpStatus.INTERNAL_SERVER_ERROR,
-    //         );
-    //     }
-    // }
 }
